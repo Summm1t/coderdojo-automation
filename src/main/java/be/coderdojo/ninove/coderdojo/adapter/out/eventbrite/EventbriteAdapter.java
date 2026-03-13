@@ -3,6 +3,7 @@ package be.coderdojo.ninove.coderdojo.adapter.out.eventbrite;
 import be.coderdojo.ninove.coderdojo.application.port.out.EventbritePort;
 import be.coderdojo.ninove.coderdojo.domain.model.Event;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Component;
@@ -14,6 +15,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class EventbriteAdapter implements EventbritePort {
@@ -26,17 +28,20 @@ public class EventbriteAdapter implements EventbritePort {
     @Override
     @SuppressWarnings("unchecked")
     public Optional<Event> findLatestPastEvent() {
+        log.debug("Fetching latest past event for organization: {}", organizationId);
         Map<String, Object> response = eventbriteRestClient.get()
                 .uri("/organizations/{orgId}/events/?order_by=start_desc", organizationId)
                 .retrieve()
                 .body(new ParameterizedTypeReference<>() {});
 
         if (response == null || !response.containsKey("events")) {
+            log.warn("No events found in response for organization: {}", organizationId);
             return Optional.empty();
         }
 
         List<Map<String, Object>> events = (List<Map<String, Object>>) response.get("events");
         if (events.isEmpty()) {
+            log.warn("Event list is empty for organization: {}", organizationId);
             return Optional.empty();
         }
 
@@ -46,6 +51,7 @@ public class EventbriteAdapter implements EventbritePort {
     @Override
     @SuppressWarnings("unchecked")
     public Optional<Event> findEventByDate(String date) {
+        log.debug("Searching for event on date: {}", date);
         // The Eventbrite API doesn't support direct searching for events by date.
         // As a workaround, we retrieve all events for the organization and then filter them by their start date.
         Map<String, Object> response = eventbriteRestClient.get()
@@ -54,6 +60,7 @@ public class EventbriteAdapter implements EventbritePort {
                 .body(new ParameterizedTypeReference<>() {});
 
         if (response == null || !response.containsKey("events")) {
+            log.warn("No events found in response for organization: {}", organizationId);
             return Optional.empty();
         }
 
@@ -66,6 +73,7 @@ public class EventbriteAdapter implements EventbritePort {
 
     @Override
     public Event copyEvent(String eventId, ZonedDateTime newStartTime, ZonedDateTime newEndTime) {
+        log.debug("Copying event ID {} to new time range: {} - {}", eventId, newStartTime, newEndTime);
         String startTimeStr = newStartTime.toOffsetDateTime().format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'"));
         String endTimeStr = newEndTime.toOffsetDateTime().format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'"));
 
@@ -86,6 +94,7 @@ public class EventbriteAdapter implements EventbritePort {
 
     @Override
     public Event updateEvent(String eventId, String newTitle) {
+        log.debug("Updating event ID {} with new title: {}", eventId, newTitle);
         Map<String, Object> request = Map.of(
                 "event", Map.of(
                         "name", Map.of("html", newTitle)

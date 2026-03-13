@@ -2,6 +2,7 @@ package be.coderdojo.ninove.coderdojo.adapter.in.shell;
 
 import be.coderdojo.ninove.coderdojo.application.port.in.CopyEventUseCase;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.shell.standard.ShellComponent;
 import org.springframework.shell.standard.ShellMethod;
 import org.springframework.shell.standard.ShellOption;
@@ -9,6 +10,7 @@ import org.springframework.shell.standard.ShellOption;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
+@Slf4j
 @ShellComponent
 @RequiredArgsConstructor
 public class EventShellAdapter {
@@ -22,6 +24,7 @@ public class EventShellAdapter {
             @ShellOption(value = "place", defaultValue = ShellOption.NULL, help = "Place for the new event") String place,
             @ShellOption(value = "debug", defaultValue = "false", help = "Show details without modifying Eventbrite") boolean debug
     ) {
+        log.debug("Received request to copy event: sourceEvent={}, date={}, place={}, debug={}", sourceEvent, date, place, debug);
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
         LocalDate localDate;
         try {

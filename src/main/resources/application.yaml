@@ -9,12 +9,7 @@ spring:
   shell:
     interactive:
       enabled: true
-logging:
-  level:
-    root: info
-    be.coderdojo.ninove: info
-    org.springframework.boot: error
-    org.springframework.shell: error
+# logging configuration moved to logback-spring.xml
 
 eventbrite:
   api:
