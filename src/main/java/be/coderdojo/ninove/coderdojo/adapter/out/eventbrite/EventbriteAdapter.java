@@ -27,7 +27,7 @@ public class EventbriteAdapter implements EventbritePort {
     @SuppressWarnings("unchecked")
     public Optional<Event> findLatestPastEvent() {
         Map<String, Object> response = eventbriteRestClient.get()
-                .uri("/organizations/{orgId}/events/?status=completed&order_by=start_desc", organizationId)
+                .uri("/organizations/{orgId}/events/?order_by=start_desc", organizationId)
                 .retrieve()
                 .body(new ParameterizedTypeReference<>() {});
 
@@ -49,7 +49,7 @@ public class EventbriteAdapter implements EventbritePort {
         // The Eventbrite API doesn't support direct searching for events by date.
         // As a workaround, we retrieve all events for the organization and then filter them by their start date.
         Map<String, Object> response = eventbriteRestClient.get()
-                .uri("/organizations/{orgId}/events/", organizationId)
+                .uri("/organizations/{orgId}/events/?order_by=start_desc", organizationId)
                 .retrieve()
                 .body(new ParameterizedTypeReference<>() {});
 
@@ -65,12 +65,12 @@ public class EventbriteAdapter implements EventbritePort {
     }
 
     @Override
-    public Event copyEvent(String eventId, ZonedDateTime newDate, String newTitle) {
+    public Event copyEvent(String eventId, ZonedDateTime newStartTime, ZonedDateTime newEndTime, String newTitle) {
         Map<String, Object> request = Map.of(
                 "event", Map.of(
                         "name", Map.of("html", newTitle),
-                        "start", Map.of("timezone", newDate.getZone().getId(), "utc", newDate.toOffsetDateTime().toString()),
-                        "end", Map.of("timezone", newDate.getZone().getId(), "utc", newDate.plusHours(3).toOffsetDateTime().toString())
+                        "start", Map.of("timezone", newStartTime.getZone().getId(), "utc", newStartTime.toOffsetDateTime().toString()),
+                        "end", Map.of("timezone", newEndTime.getZone().getId(), "utc", newEndTime.toOffsetDateTime().toString())
                 )
         );
 

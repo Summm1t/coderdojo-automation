@@ -51,7 +51,7 @@ class EventbriteAdapterTest {
             }
             """;
 
-        server.expect(requestTo("https://www.eventbriteapi.com/v3/organizations/test-org-id/events/?status=completed&order_by=start_desc"))
+        server.expect(requestTo("https://www.eventbriteapi.com/v3/organizations/test-org-id/events/?order_by=start_desc"))
                 .andRespond(withSuccess(responseJson, MediaType.APPLICATION_JSON));
 
         Optional<Event> event = adapter.findLatestPastEvent();
@@ -77,7 +77,7 @@ class EventbriteAdapterTest {
             }
             """;
 
-        server.expect(requestTo("https://www.eventbriteapi.com/v3/organizations/test-org-id/events/"))
+        server.expect(requestTo("https://www.eventbriteapi.com/v3/organizations/test-org-id/events/?order_by=start_desc"))
                 .andRespond(withSuccess(responseJson, MediaType.APPLICATION_JSON));
 
         Optional<Event> event = adapter.findEventByDate("2023-11-15");
@@ -102,7 +102,7 @@ class EventbriteAdapterTest {
         server.expect(requestTo("https://www.eventbriteapi.com/v3/events/1/copy/"))
                 .andRespond(withSuccess(responseJson, MediaType.APPLICATION_JSON));
 
-        Event newEvent = adapter.copyEvent("1", ZonedDateTime.parse("2024-10-01T10:00:00Z"), "New Event");
+        Event newEvent = adapter.copyEvent("1", ZonedDateTime.parse("2024-10-01T10:00:00Z"), ZonedDateTime.parse("2024-10-01T13:00:00Z"), "New Event");
 
         assertThat(newEvent.getId()).isEqualTo("2");
         assertThat(newEvent.getUrl()).isEqualTo("http://new-event.url");

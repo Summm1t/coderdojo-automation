@@ -6,9 +6,7 @@ import org.springframework.shell.standard.ShellComponent;
 import org.springframework.shell.standard.ShellMethod;
 import org.springframework.shell.standard.ShellOption;
 
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
+import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
 @ShellComponent
@@ -19,20 +17,19 @@ public class EventShellAdapter {
 
     @ShellMethod(key = "copy-event", value = "Copy an existing event to a new date.")
     public String copyEvent(
-            @ShellOption(value = "source-event", help = "Date of the event to copy or 'latest'") String sourceEvent,
-            @ShellOption(value = "date", help = "New event date (yyyy-MM-dd HH:mm)") String date,
+            @ShellOption(value = "source-event", help = "Date of the event to copy (dd/MM/yyyy) or 'latest'") String sourceEvent,
+            @ShellOption(value = "date", help = "New event date (dd/MM/yyyy)") String date,
             @ShellOption(value = "title", help = "New event title") String title,
             @ShellOption(value = "debug", defaultValue = "false", help = "Show details without modifying Eventbrite") boolean debug
     ) {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
-        ZonedDateTime zonedDateTime;
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+        LocalDate localDate;
         try {
-            LocalDateTime localDateTime = LocalDateTime.parse(date, formatter);
-            zonedDateTime = localDateTime.atZone(ZoneId.systemDefault());
+            localDate = LocalDate.parse(date, formatter);
         } catch (java.time.format.DateTimeParseException e) {
-            return "Invalid date format. Please use 'yyyy-MM-dd HH:mm' (e.m. 2026-03-21 13:30).";
+            return "Invalid date format. Please use 'dd/MM/yyyy' (e.m. 21/03/2026).";
         }
 
-        return copyEventUseCase.copyEvent(sourceEvent, zonedDateTime, title, debug);
+        return copyEventUseCase.copyEvent(sourceEvent, localDate, title, debug);
     }
 }
