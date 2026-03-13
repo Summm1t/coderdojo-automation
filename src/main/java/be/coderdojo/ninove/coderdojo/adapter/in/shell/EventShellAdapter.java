@@ -19,7 +19,7 @@ public class EventShellAdapter {
     public String copyEvent(
             @ShellOption(value = "source-event", help = "Date of the event to copy (dd/MM/yyyy) or 'latest'") String sourceEvent,
             @ShellOption(value = "date", help = "New event date (dd/MM/yyyy)") String date,
-            @ShellOption(value = "title", help = "New event title") String title,
+            @ShellOption(value = "place", defaultValue = ShellOption.NULL, help = "Place for the new event") String place,
             @ShellOption(value = "debug", defaultValue = "false", help = "Show details without modifying Eventbrite") boolean debug
     ) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
@@ -30,6 +30,6 @@ public class EventShellAdapter {
             return "Invalid date format. Please use 'dd/MM/yyyy' (e.m. 21/03/2026).";
         }
 
-        return copyEventUseCase.copyEvent(sourceEvent, localDate, title, debug);
+        return copyEventUseCase.copyEvent(sourceEvent, localDate, place, debug);
     }
 }

@@ -35,8 +35,9 @@ class CopyEventServiceTest {
     void copyEvent_withLatest_shouldCallFindLatestPastEvent() {
         // Given
         String sourceDate = "latest";
-        LocalDate newDate = LocalDate.now();
-        String newTitle = "New Title";
+        LocalDate newDate = LocalDate.of(2026, 3, 13);
+        String place = "Special Edition";
+        String expectedTitle = "CoderDojo Ninove - 13/03/2026 - Special Edition";
         ZonedDateTime sourceStartTime = ZonedDateTime.parse("2023-01-01T10:00:00Z");
         ZonedDateTime sourceEndTime = ZonedDateTime.parse("2023-01-01T13:00:00Z");
         Event sourceEvent = Event.builder()
@@ -47,7 +48,7 @@ class CopyEventServiceTest {
                 .build();
         Event newEvent = Event.builder()
                 .id("456")
-                .name(newTitle)
+                .name(expectedTitle)
                 .url("http://new-event.url")
                 .build();
 
@@ -55,20 +56,21 @@ class CopyEventServiceTest {
         when(eventbritePort.copyEvent(anyString(), any(), any(), anyString())).thenReturn(newEvent);
 
         // When
-        String result = copyEventService.copyEvent(sourceDate, newDate, newTitle, false);
+        String result = copyEventService.copyEvent(sourceDate, newDate, place, false);
 
         // Then
         assertThat(result).isEqualTo("http://new-event.url");
         verify(eventbritePort).findLatestPastEvent();
-        verify(eventbritePort).copyEvent(eq("123"), any(), any(), eq(newTitle));
+        verify(eventbritePort).copyEvent(eq("123"), any(), any(), eq(expectedTitle));
     }
 
     @Test
     void copyEvent_withDate_shouldCallFindEventByDate() {
         // Given
         String sourceDate = "01/01/2023";
-        LocalDate newDate = LocalDate.now();
-        String newTitle = "New Title";
+        LocalDate newDate = LocalDate.of(2026, 3, 13);
+        String place = null;
+        String expectedTitle = "CoderDojo Ninove - 13/03/2026 - bibliotheek Ninove";
         ZonedDateTime sourceStartTime = ZonedDateTime.parse("2023-01-01T10:00:00Z");
         ZonedDateTime sourceEndTime = ZonedDateTime.parse("2023-01-01T13:00:00Z");
         Event sourceEvent = Event.builder()
@@ -79,7 +81,7 @@ class CopyEventServiceTest {
                 .build();
         Event newEvent = Event.builder()
                 .id("456")
-                .name(newTitle)
+                .name(expectedTitle)
                 .url("http://new-event.url")
                 .build();
 
@@ -87,19 +89,20 @@ class CopyEventServiceTest {
         when(eventbritePort.copyEvent(anyString(), any(), any(), anyString())).thenReturn(newEvent);
 
         // When
-        String result = copyEventService.copyEvent(sourceDate, newDate, newTitle, false);
+        String result = copyEventService.copyEvent(sourceDate, newDate, place, false);
 
         // Then
         assertThat(result).isEqualTo("http://new-event.url");
         verify(eventbritePort).findEventByDate("2023-01-01");
+        verify(eventbritePort).copyEvent(eq("123"), any(), any(), eq(expectedTitle));
     }
 
     @Test
     void copyEvent_debugMode_shouldNotCallCopyEvent() {
         // Given
         String sourceDate = "latest";
-        LocalDate newDate = LocalDate.now();
-        String newTitle = "New Title";
+        LocalDate newDate = LocalDate.of(2026, 3, 13);
+        String place = "Debug Suffix";
         ZonedDateTime sourceStartTime = ZonedDateTime.parse("2023-01-01T10:00:00Z");
         ZonedDateTime sourceEndTime = ZonedDateTime.parse("2023-01-01T13:00:00Z");
         Event sourceEvent = Event.builder()
@@ -112,10 +115,11 @@ class CopyEventServiceTest {
         when(eventbritePort.findLatestPastEvent()).thenReturn(Optional.of(sourceEvent));
 
         // When
-        String result = copyEventService.copyEvent(sourceDate, newDate, newTitle, true);
+        String result = copyEventService.copyEvent(sourceDate, newDate, place, true);
 
         // Then
         assertThat(result).contains("DEBUG MODE");
+        assertThat(result).contains("CoderDojo Ninove - 13/03/2026 - Debug Suffix");
         verify(eventbritePort, never()).copyEvent(anyString(), any(), any(), anyString());
     }
 
@@ -126,7 +130,7 @@ class CopyEventServiceTest {
 
         // When & Then
         assertThrows(IllegalArgumentException.class, () -> 
-            copyEventService.copyEvent("latest", LocalDate.now(), "Title", false)
+            copyEventService.copyEvent("latest", LocalDate.now(), null, false)
         );
     }
 }

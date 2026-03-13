@@ -20,7 +20,7 @@ public class CopyEventService implements CopyEventUseCase {
     private final EventbritePort eventbritePort;
 
     @Override
-    public String copyEvent(String sourceEventDate, LocalDate newDate, String newTitle, boolean debug) {
+    public String copyEvent(String sourceEventDate, LocalDate newDate, String place, boolean debug) {
         Optional<Event> sourceEventOpt;
         if ("latest".equalsIgnoreCase(sourceEventDate)) {
             sourceEventOpt = eventbritePort.findLatestPastEvent();
@@ -47,6 +47,10 @@ public class CopyEventService implements CopyEventUseCase {
 
         ZonedDateTime newStartTime = LocalDateTime.of(newDate, startTime).atZone(sourceEvent.getStartTime().getZone());
         ZonedDateTime newEndTime = LocalDateTime.of(newDate, endTime).atZone(sourceEvent.getEndTime().getZone());
+
+        String suffix = (place == null || place.isBlank()) ? "bibliotheek Ninove" : place;
+        String formattedNewDate = newDate.format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+        String newTitle = String.format("CoderDojo Ninove - %s - %s", formattedNewDate, suffix);
 
         if (debug) {
             return String.format("DEBUG MODE: Would copy event '%s' (ID: %s) to new event '%s' on %s (from %s to %s)",
