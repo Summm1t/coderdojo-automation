@@ -51,7 +51,7 @@ class EventbriteAdapterTest {
             }
             """;
 
-        server.expect(requestTo("https://www.eventbriteapi.com/v3/organizations/test-org-id/events/?status=past&order_by=start_desc"))
+        server.expect(requestTo("https://www.eventbriteapi.com/v3/organizations/test-org-id/events/?status=completed&order_by=start_desc"))
                 .andRespond(withSuccess(responseJson, MediaType.APPLICATION_JSON));
 
         Optional<Event> event = adapter.findLatestPastEvent();

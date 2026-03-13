@@ -1,4 +1,7 @@
 spring:
+  main:
+    banner-mode: "off"
+    log-startup-info: false
   application:
     name: coderdojo
   config:
@@ -6,6 +9,12 @@ spring:
   shell:
     interactive:
       enabled: true
+logging:
+  level:
+    root: info
+    be.coderdojo.ninove: info
+    org.springframework.boot: error
+    org.springframework.shell: error
 
 eventbrite:
   api:

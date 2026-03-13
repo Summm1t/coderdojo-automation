@@ -27,7 +27,7 @@ public class EventbriteAdapter implements EventbritePort {
     @SuppressWarnings("unchecked")
     public Optional<Event> findLatestPastEvent() {
         Map<String, Object> response = eventbriteRestClient.get()
-                .uri("/organizations/{orgId}/events/?status=past&order_by=start_desc", organizationId)
+                .uri("/organizations/{orgId}/events/?status=completed&order_by=start_desc", organizationId)
                 .retrieve()
                 .body(new ParameterizedTypeReference<>() {});
 

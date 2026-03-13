@@ -25,8 +25,13 @@ public class EventShellAdapter {
             @ShellOption(value = "debug", defaultValue = "false", help = "Show details without modifying Eventbrite") boolean debug
     ) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
-        LocalDateTime localDateTime = LocalDateTime.parse(date, formatter);
-        ZonedDateTime zonedDateTime = localDateTime.atZone(ZoneId.systemDefault());
+        ZonedDateTime zonedDateTime;
+        try {
+            LocalDateTime localDateTime = LocalDateTime.parse(date, formatter);
+            zonedDateTime = localDateTime.atZone(ZoneId.systemDefault());
+        } catch (java.time.format.DateTimeParseException e) {
+            return "Invalid date format. Please use 'yyyy-MM-dd HH:mm' (e.m. 2026-03-21 13:30).";
+        }
 
         return copyEventUseCase.copyEvent(sourceEvent, zonedDateTime, title, debug);
     }

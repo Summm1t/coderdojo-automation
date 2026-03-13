@@ -38,3 +38,6 @@ build/
 # Local temporary files
 /coderdojo.log
 /.output.txt
+/test-explore-lib
+/test-explore
+/build_debug.txt
