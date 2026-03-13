@@ -56,7 +56,8 @@ public class CopyEventService implements CopyEventUseCase {
             return String.format("DEBUG MODE: Would copy event '%s' (ID: %s) to new event '%s' on %s (from %s to %s)",
                     sourceEvent.getName(), sourceEvent.getId(), newTitle, newDate, newStartTime, newEndTime);
         } else {
-            Event newEvent = eventbritePort.copyEvent(sourceEvent.getId(), newStartTime, newEndTime, newTitle);
+            Event newEvent = eventbritePort.copyEvent(sourceEvent.getId(), newStartTime, newEndTime);
+            newEvent = eventbritePort.updateEvent(newEvent.getId(), newTitle);
             return newEvent.getUrl();
         }
     }

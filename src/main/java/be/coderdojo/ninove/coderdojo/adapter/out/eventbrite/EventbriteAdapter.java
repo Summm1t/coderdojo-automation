@@ -65,22 +65,47 @@ public class EventbriteAdapter implements EventbritePort {
     }
 
     @Override
-    public Event copyEvent(String eventId, ZonedDateTime newStartTime, ZonedDateTime newEndTime, String newTitle) {
+    public Event copyEvent(String eventId, ZonedDateTime newStartTime, ZonedDateTime newEndTime) {
+        String startTimeStr = newStartTime.toOffsetDateTime().format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'"));
+        String endTimeStr = newEndTime.toOffsetDateTime().format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'"));
+
         Map<String, Object> request = Map.of(
-                "event", Map.of(
-                        "name", Map.of("html", newTitle),
-                        "start", Map.of("timezone", newStartTime.getZone().getId(), "utc", newStartTime.toOffsetDateTime().toString()),
-                        "end", Map.of("timezone", newEndTime.getZone().getId(), "utc", newEndTime.toOffsetDateTime().toString())
-                )
+                "start_date", startTimeStr,
+                "end_date", endTimeStr
         );
 
         Map<String, Object> response = eventbriteRestClient.post()
                 .uri("/events/{eventId}/copy/", eventId)
+                .contentType(org.springframework.http.MediaType.APPLICATION_FORM_URLENCODED)
+                .body(toFormData(request))
+                .retrieve()
+                .body(new ParameterizedTypeReference<>() {});
+
+        return mapToEvent(Objects.requireNonNull(response));
+    }
+
+    @Override
+    public Event updateEvent(String eventId, String newTitle) {
+        Map<String, Object> request = Map.of(
+                "event", Map.of(
+                        "name", Map.of("html", newTitle)
+                )
+        );
+
+        Map<String, Object> response = eventbriteRestClient.post()
+                .uri("/events/{eventId}/", eventId)
                 .body(request)
                 .retrieve()
                 .body(new ParameterizedTypeReference<>() {});
 
         return mapToEvent(Objects.requireNonNull(response));
+    }
+
+    private String toFormData(Map<String, Object> params) {
+        return params.entrySet().stream()
+                .map(e -> java.net.URLEncoder.encode(e.getKey(), java.nio.charset.StandardCharsets.UTF_8) + "=" +
+                        java.net.URLEncoder.encode(e.getValue().toString(), java.nio.charset.StandardCharsets.UTF_8))
+                .collect(java.util.stream.Collectors.joining("&"));
     }
 
     @SuppressWarnings("unchecked")

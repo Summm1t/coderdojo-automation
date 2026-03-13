@@ -53,7 +53,8 @@ class CopyEventServiceTest {
                 .build();
 
         when(eventbritePort.findLatestPastEvent()).thenReturn(Optional.of(sourceEvent));
-        when(eventbritePort.copyEvent(anyString(), any(), any(), anyString())).thenReturn(newEvent);
+        when(eventbritePort.copyEvent(anyString(), any(), any())).thenReturn(newEvent);
+        when(eventbritePort.updateEvent(anyString(), anyString())).thenReturn(newEvent);
 
         // When
         String result = copyEventService.copyEvent(sourceDate, newDate, place, false);
@@ -61,7 +62,8 @@ class CopyEventServiceTest {
         // Then
         assertThat(result).isEqualTo("http://new-event.url");
         verify(eventbritePort).findLatestPastEvent();
-        verify(eventbritePort).copyEvent(eq("123"), any(), any(), eq(expectedTitle));
+        verify(eventbritePort).copyEvent(eq("123"), any(), any());
+        verify(eventbritePort).updateEvent(eq("456"), eq(expectedTitle));
     }
 
     @Test
@@ -86,7 +88,8 @@ class CopyEventServiceTest {
                 .build();
 
         when(eventbritePort.findEventByDate("2023-01-01")).thenReturn(Optional.of(sourceEvent));
-        when(eventbritePort.copyEvent(anyString(), any(), any(), anyString())).thenReturn(newEvent);
+        when(eventbritePort.copyEvent(anyString(), any(), any())).thenReturn(newEvent);
+        when(eventbritePort.updateEvent(anyString(), anyString())).thenReturn(newEvent);
 
         // When
         String result = copyEventService.copyEvent(sourceDate, newDate, place, false);
@@ -94,7 +97,8 @@ class CopyEventServiceTest {
         // Then
         assertThat(result).isEqualTo("http://new-event.url");
         verify(eventbritePort).findEventByDate("2023-01-01");
-        verify(eventbritePort).copyEvent(eq("123"), any(), any(), eq(expectedTitle));
+        verify(eventbritePort).copyEvent(eq("123"), any(), any());
+        verify(eventbritePort).updateEvent(eq("456"), eq(expectedTitle));
     }
 
     @Test
@@ -120,7 +124,8 @@ class CopyEventServiceTest {
         // Then
         assertThat(result).contains("DEBUG MODE");
         assertThat(result).contains("CoderDojo Ninove - 13/03/2026 - Debug Suffix");
-        verify(eventbritePort, never()).copyEvent(anyString(), any(), any(), anyString());
+        verify(eventbritePort, never()).copyEvent(anyString(), any(), any());
+        verify(eventbritePort, never()).updateEvent(anyString(), anyString());
     }
 
     @Test

@@ -7,5 +7,6 @@ import java.util.Optional;
 public interface EventbritePort {
     Optional<Event> findLatestPastEvent();
     Optional<Event> findEventByDate(String date);
-    Event copyEvent(String eventId, ZonedDateTime newStartTime, ZonedDateTime newEndTime, String newTitle);
+    Event copyEvent(String eventId, ZonedDateTime newStartTime, ZonedDateTime newEndTime);
+    Event updateEvent(String eventId, String newTitle);
 }
