@@ -1,3 +1,14 @@
 spring:
   application:
     name: coderdojo
+  config:
+    import: "optional:file:.env[.properties]"
+  shell:
+    interactive:
+      enabled: true
+
+eventbrite:
+  api:
+    token: ${EVENTBRITE_API_TOKEN:placeholder}
+    base-url: https://www.eventbriteapi.com/v3
+    organization-id: ${EVENTBRITE_ORG_ID:placeholder}
