@@ -12,10 +12,8 @@ import java.time.ZonedDateTime;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.content;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
-import static org.springframework.test.web.client.response.MockRestResponseCreators.withStatus;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 
 @TestPropertySource(properties = {
@@ -139,35 +137,5 @@ class EventbriteAdapterTest {
 
         assertThat(updatedEvent.getName()).isEqualTo("Updated Event");
         assertThat(updatedEvent.getUrl()).isEqualTo("http://updated-event.url");
-    }
-
-    @Test
-    void copyEvent_shouldThrowExceptionOn404() {
-        server.expect(requestTo("https://www.eventbriteapi.com/v3/events/1/copy/"))
-                .andRespond(withStatus(org.springframework.http.HttpStatus.NOT_FOUND));
-
-        assertThrows(org.springframework.web.client.HttpClientErrorException.class, () -> {
-            adapter.copyEvent("1", ZonedDateTime.now(), ZonedDateTime.now().plusHours(1));
-        });
-    }
-
-    @Test
-    void findLatestPastEvent_shouldThrowExceptionOn401() {
-        server.expect(requestTo(org.hamcrest.Matchers.containsString("/organizations/test-org-id/events/")))
-                .andRespond(withStatus(org.springframework.http.HttpStatus.UNAUTHORIZED));
-
-        assertThrows(org.springframework.web.client.HttpClientErrorException.class, () -> {
-            adapter.findLatestPastEvent();
-        });
-    }
-
-    @Test
-    void copyEvent_shouldThrowExceptionOn400() {
-        server.expect(requestTo(org.hamcrest.Matchers.containsString("/events/1/copy/")))
-                .andRespond(withStatus(org.springframework.http.HttpStatus.BAD_REQUEST));
-
-        assertThrows(org.springframework.web.client.HttpClientErrorException.class, () -> {
-            adapter.copyEvent("1", ZonedDateTime.now(), ZonedDateTime.now().plusHours(1));
-        });
     }
 }

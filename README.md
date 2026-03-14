@@ -10,8 +10,7 @@ workflows, specifically for managing Eventbrite events.
 
 ## Configuration
 
-The application requires Eventbrite and Mailchimp API credentials. You can provide them by creating
-a `.env` file
+The application requires Eventbrite API credentials. You can provide them by creating a `.env` file
 in the project root or by setting environment variables.
 
 ### Environment Variables / .env file
@@ -19,8 +18,6 @@ in the project root or by setting environment variables.
 ```env
 EVENTBRITE_API_TOKEN=your_eventbrite_api_token
 EVENTBRITE_ORG_ID=your_eventbrite_organization_id
-MAILCHIMP_API_KEY=your_mailchimp_api_key
-MAILCHIMP_LIST_ID=your_mailchimp_list_id
 ```
 
 The application is configured to automatically import an optional `.env` file if it exists.
@@ -68,19 +65,6 @@ Copies an existing event to a new date.
 * `--place`: (Optional) The location for the new event.
 * `--debug`: (Optional, default: `false`) If set to `true`, the application will show the details of
   the event it would create without actually making any changes on Eventbrite.
-
-### `unsubscribe-mailchimp`
-
-Tag and unsubscribe a list of comma-separated email addresses from Mailchimp.
-
-**Usage:**
-`unsubscribe-mailchimp <emails> [--debug <true|false>]`
-
-**Parameters:**
-
-* `<emails>`: Comma-separated list of email addresses.
-* `--debug`: (Optional, default: `false`) If set to `true`, the application will log the API URI and
-  request body instead of calling the Mailchimp API.
 
 ## Development
 
