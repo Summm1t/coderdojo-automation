@@ -8,5 +8,5 @@ public interface EventbritePort {
     Optional<Event> findLatestPastEvent();
     Optional<Event> findEventByDate(String date);
     Event copyEvent(String eventId, ZonedDateTime newStartTime, ZonedDateTime newEndTime);
-    Event updateEvent(String eventId, String newTitle);
+    Event updateEvent(String eventId, String newTitle, ZonedDateTime newStartTime, ZonedDateTime newEndTime);
 }

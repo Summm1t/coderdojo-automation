@@ -43,3 +43,4 @@ build/
 /build_debug.txt
 /application.log
 /application.log.*
+/sandbox

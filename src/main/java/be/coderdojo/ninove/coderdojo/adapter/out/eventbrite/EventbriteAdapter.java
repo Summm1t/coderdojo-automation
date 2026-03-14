@@ -101,11 +101,27 @@ public class EventbriteAdapter implements EventbritePort {
   }
 
   @Override
-  public Event updateEvent(String eventId, String newTitle) {
-    log.debug("Updating event ID {} with new title: {}", eventId, newTitle);
+  public Event updateEvent(String eventId, String newTitle, ZonedDateTime newStartTime,
+      ZonedDateTime newEndTime) {
+    log.debug("Updating event ID {} with new title: {} and time range: {} - {}", eventId, newTitle,
+        newStartTime, newEndTime);
+
+    String startTimeInUTC = newStartTime.withZoneSameInstant(java.time.ZoneOffset.UTC)
+        .format(DATE_TIME_FORMATTER);
+    String endTimeInUTC = newEndTime.withZoneSameInstant(java.time.ZoneOffset.UTC)
+        .format(DATE_TIME_FORMATTER);
+
     Map<String, Object> request = Map.of(
         "event", Map.of(
-            "name", Map.of("html", newTitle)
+            "name", Map.of("html", newTitle),
+            "start", Map.of(
+                "timezone", newStartTime.getZone().getId(),
+                "utc", startTimeInUTC
+            ),
+            "end", Map.of(
+                "timezone", newEndTime.getZone().getId(),
+                "utc", endTimeInUTC
+            )
         )
     );
 

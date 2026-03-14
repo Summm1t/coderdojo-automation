@@ -69,7 +69,8 @@ public class CopyEventService implements CopyEventUseCase {
             log.info("Copying event ID {} to {}", sourceEvent.getId(), newStartTime);
             Event newEvent = eventbritePort.copyEvent(sourceEvent.getId(), newStartTime, newEndTime);
             log.info("Updating title for newly copied event ID {}", newEvent.getId());
-            newEvent = eventbritePort.updateEvent(newEvent.getId(), newTitle);
+            newEvent = eventbritePort.updateEvent(newEvent.getId(), newTitle, newStartTime,
+                newEndTime);
             return newEvent.getUrl();
         }
     }

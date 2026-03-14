@@ -127,9 +127,13 @@ class EventbriteAdapterTest {
         server.expect(requestTo("https://www.eventbriteapi.com/v3/events/2/"))
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(content().string(org.hamcrest.Matchers.containsString("\"name\":{\"html\":\"Updated Event\"}")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("\"utc\":\"2024-10-01T10:00:00Z\"")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("\"timezone\":\"Europe/Brussels\"")))
                 .andRespond(withSuccess(responseJson, MediaType.APPLICATION_JSON));
 
-        Event updatedEvent = adapter.updateEvent("2", "Updated Event");
+        Event updatedEvent = adapter.updateEvent("2", "Updated Event",
+                ZonedDateTime.parse("2024-10-01T12:00:00+02:00[Europe/Brussels]"),
+                ZonedDateTime.parse("2024-10-01T15:00:00+02:00[Europe/Brussels]"));
 
         assertThat(updatedEvent.getName()).isEqualTo("Updated Event");
         assertThat(updatedEvent.getUrl()).isEqualTo("http://updated-event.url");

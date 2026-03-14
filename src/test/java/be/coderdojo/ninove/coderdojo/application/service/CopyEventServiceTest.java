@@ -54,7 +54,7 @@ class CopyEventServiceTest {
 
         when(eventbritePort.findLatestPastEvent()).thenReturn(Optional.of(sourceEvent));
         when(eventbritePort.copyEvent(anyString(), any(), any())).thenReturn(newEvent);
-        when(eventbritePort.updateEvent(anyString(), anyString())).thenReturn(newEvent);
+        when(eventbritePort.updateEvent(anyString(), anyString(), any(), any())).thenReturn(newEvent);
 
         // When
         String result = copyEventService.copyEvent(sourceDate, newDate, place, false);
@@ -63,7 +63,7 @@ class CopyEventServiceTest {
         assertThat(result).isEqualTo("http://new-event.url");
         verify(eventbritePort).findLatestPastEvent();
         verify(eventbritePort).copyEvent(eq("123"), any(), any());
-        verify(eventbritePort).updateEvent(eq("456"), eq(expectedTitle));
+        verify(eventbritePort).updateEvent(eq("456"), eq(expectedTitle), any(), any());
     }
 
     @Test
@@ -89,7 +89,7 @@ class CopyEventServiceTest {
 
         when(eventbritePort.findEventByDate("2023-01-01")).thenReturn(Optional.of(sourceEvent));
         when(eventbritePort.copyEvent(anyString(), any(), any())).thenReturn(newEvent);
-        when(eventbritePort.updateEvent(anyString(), anyString())).thenReturn(newEvent);
+        when(eventbritePort.updateEvent(anyString(), anyString(), any(), any())).thenReturn(newEvent);
 
         // When
         String result = copyEventService.copyEvent(sourceDate, newDate, place, false);
@@ -98,7 +98,7 @@ class CopyEventServiceTest {
         assertThat(result).isEqualTo("http://new-event.url");
         verify(eventbritePort).findEventByDate("2023-01-01");
         verify(eventbritePort).copyEvent(eq("123"), any(), any());
-        verify(eventbritePort).updateEvent(eq("456"), eq(expectedTitle));
+        verify(eventbritePort).updateEvent(eq("456"), eq(expectedTitle), any(), any());
     }
 
     @Test
@@ -125,7 +125,7 @@ class CopyEventServiceTest {
         assertThat(result).contains("DEBUG MODE");
         assertThat(result).contains("CoderDojo Ninove - 13/03/2026 - Debug Suffix");
         verify(eventbritePort, never()).copyEvent(anyString(), any(), any());
-        verify(eventbritePort, never()).updateEvent(anyString(), anyString());
+        verify(eventbritePort, never()).updateEvent(anyString(), anyString(), any(), any());
     }
 
     @Test
