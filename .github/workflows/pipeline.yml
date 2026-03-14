@@ -40,6 +40,9 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
       - name: Log in to the Container registry
         uses: docker/login-action@v3
         with:
@@ -69,9 +72,10 @@ jobs:
           mvn -B versions:set -DnewVersion=${{ steps.meta.outputs.version }} -DgenerateBackupPoms=false
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git checkout main
           git add pom.xml
           git commit -m "chore: update Maven version to ${{ steps.meta.outputs.version }} [skip ci]"
-          git push
+          git push origin main
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
@@ -82,6 +86,7 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
             MAVEN_VERSION=${{ steps.meta.outputs.version }}
+
 
       - name: Create new Maven SNAPSHOT version
         run: |
@@ -97,4 +102,4 @@ jobs:
           mvn -B versions:set -DnewVersion=$NEXT_VERSION -DgenerateBackupPoms=false
           git add pom.xml
           git commit -m "chore: bump to next development version $NEXT_VERSION [skip ci]"
-          git push
+          git push origin main
