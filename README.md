@@ -24,6 +24,54 @@ The application is configured to automatically import an optional `.env` file if
 
 ## Getting Started
 
+### Run the application with Docker
+
+You can run the application using Docker, either by building it locally or by pulling the pre-built
+image from GitHub Container Registry (GHCR).
+
+#### Prerequisites for Docker
+
+* **Docker** installed on your machine.
+* A `.env` file with your Eventbrite credentials in the current directory (
+  see [Configuration](#configuration)).
+
+#### Build and run locally
+
+1. **Build the Docker image:**
+
+   ```bash
+   docker build -t coderdojo-automation .
+   ```
+
+2. **Run the image in interactive mode:**
+
+   ```bash
+   docker run -it --env-file .env coderdojo-automation
+   ```
+
+3. **Run a single command:**
+
+   ```bash
+   docker run -it --env-file .env coderdojo-automation copy-event --source-event latest --date "21/04/2026"
+   ```
+
+#### Run using GHCR image
+
+The image is published to GHCR for every release. Replace `<version>` with the desired version (
+e.g., `1.0.0`).
+
+```bash
+docker run -it --env-file .env ghcr.io/summm1t/cdj-workflow-automation:<version> \
+  copy-event --source-event 'latest' --date '01/06/2026'
+```
+
+Alternatively, use the `latest` tag for the most recent version:
+
+```bash
+docker run -it --env-file .env ghcr.io/summm1t/cdj-workflow-automation:latest \
+  copy-event --source-event 'latest' --date '01/06/2026'
+```
+
 ### Build the application
 
 To build the application and run tests, use:
@@ -45,7 +93,7 @@ Once in the shell, you can list all available commands with `help`.
 Alternatively, run a single command and exit:
 
 ```bash
-java -jar target/coderdojo-0.0.1-SNAPSHOT.jar copy-event --source-event latest --date "21/04/2026"
+java -jar target/coderdojo-0.0.1-SNAPSHOT.jar copy-event --source-event latest --date '21/04/2026'
 ```
 
 ## Available Commands
@@ -108,5 +156,5 @@ The release process is automated and follows these steps:
 
 ### Docker Image
 
-The Docker image is available at `ghcr.io/${{ github.repository }}`.
-It uses `eclipse-temurin:21-jre-alpine` as the runtime base for a lightweight and secure image.
+The Docker image is available at `ghcr.io/summm1t/cdj-workflow-automation`.
+It uses `eclipse-temurin:21-jre` as the runtime base.
