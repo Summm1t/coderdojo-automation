@@ -12,7 +12,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClient;
 
 @Slf4j
@@ -34,6 +36,13 @@ public class EventbriteAdapter implements EventbritePort {
     Map<String, Object> response = eventbriteRestClient.get()
         .uri("/organizations/{orgId}/events/?order_by=start_desc", organizationId)
         .retrieve()
+        .onStatus(status -> status == HttpStatus.NOT_FOUND, (req, res) -> {
+          log.warn("Organization {} not found in Eventbrite", organizationId);
+        })
+        .onStatus(status -> status.is4xxClientError() && status != HttpStatus.NOT_FOUND, (req, res) -> {
+          log.error("Eventbrite API error: {} - {}", res.getStatusCode(), res.getStatusText());
+          throw new HttpClientErrorException(res.getStatusCode(), "Eventbrite API error: " + res.getStatusText());
+        })
         .body(new ParameterizedTypeReference<>() {
         });
 
@@ -60,6 +69,13 @@ public class EventbriteAdapter implements EventbritePort {
     Map<String, Object> response = eventbriteRestClient.get()
         .uri("/organizations/{orgId}/events/?order_by=start_desc", organizationId)
         .retrieve()
+        .onStatus(status -> status == HttpStatus.NOT_FOUND, (req, res) -> {
+          log.warn("Organization {} not found in Eventbrite", organizationId);
+        })
+        .onStatus(status -> status.is4xxClientError() && status != HttpStatus.NOT_FOUND, (req, res) -> {
+          log.error("Eventbrite API error: {} - {}", res.getStatusCode(), res.getStatusText());
+          throw new HttpClientErrorException(res.getStatusCode(), "Eventbrite API error: " + res.getStatusText());
+        })
         .body(new ParameterizedTypeReference<>() {
         });
 
@@ -94,6 +110,14 @@ public class EventbriteAdapter implements EventbritePort {
         .contentType(org.springframework.http.MediaType.APPLICATION_FORM_URLENCODED)
         .body(toFormData(request))
         .retrieve()
+        .onStatus(status -> status == HttpStatus.NOT_FOUND, (req, res) -> {
+          log.error("Event {} not found for copying", eventId);
+          throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "Event not found");
+        })
+        .onStatus(status -> status.is4xxClientError() && status != HttpStatus.NOT_FOUND, (req, res) -> {
+          log.error("Eventbrite API error: {} - {}", res.getStatusCode(), res.getStatusText());
+          throw new HttpClientErrorException(res.getStatusCode(), "Eventbrite API error: " + res.getStatusText());
+        })
         .body(new ParameterizedTypeReference<>() {
         });
 
@@ -129,6 +153,14 @@ public class EventbriteAdapter implements EventbritePort {
         .uri("/events/{eventId}/", eventId)
         .body(request)
         .retrieve()
+        .onStatus(status -> status == HttpStatus.NOT_FOUND, (req, res) -> {
+          log.error("Event {} not found for updating", eventId);
+          throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "Event not found");
+        })
+        .onStatus(status -> status.is4xxClientError() && status != HttpStatus.NOT_FOUND, (req, res) -> {
+          log.error("Eventbrite API error: {} - {}", res.getStatusCode(), res.getStatusText());
+          throw new HttpClientErrorException(res.getStatusCode(), "Eventbrite API error: " + res.getStatusText());
+        })
         .body(new ParameterizedTypeReference<>() {
         });
 
