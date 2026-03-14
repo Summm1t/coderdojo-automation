@@ -24,8 +24,7 @@
     </root>
 
     <logger name="be.coderdojo.ninove" level="DEBUG"/>
-    <logger name="org.springframework.boot" level="WARN"/>
-    <logger name="org.springframework.shell" level="WARN"/>
+    <logger name="org.springframework" level="WARN"/>
     <!-- org.jline seems to bypass standard logging for some early warnings -->
     <logger name="org.jline" level="OFF"/>
 </configuration>

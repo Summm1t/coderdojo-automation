@@ -42,3 +42,4 @@ build/
 /test-explore
 /build_debug.txt
 /application.log
+/application.log.*

@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Optional;
@@ -20,6 +21,7 @@ import java.util.Optional;
 public class CopyEventService implements CopyEventUseCase {
 
     private final EventbritePort eventbritePort;
+    private static final ZoneId BRUSSELS_ZONE = ZoneId.of("Europe/Brussels");
 
     @Override
     public String copyEvent(String sourceEventDate, LocalDate newDate, String place, boolean debug) {
@@ -48,11 +50,11 @@ public class CopyEventService implements CopyEventUseCase {
         Event sourceEvent = sourceEventOpt.get();
         log.debug("Source event found: {} (ID: {})", sourceEvent.getName(), sourceEvent.getId());
 
-        LocalTime startTime = sourceEvent.getStartTime().toLocalTime();
-        LocalTime endTime = sourceEvent.getEndTime().toLocalTime();
+        LocalTime startTime = LocalTime.of(9, 15);
+        LocalTime endTime = LocalTime.of(12, 30);
 
-        ZonedDateTime newStartTime = LocalDateTime.of(newDate, startTime).atZone(sourceEvent.getStartTime().getZone());
-        ZonedDateTime newEndTime = LocalDateTime.of(newDate, endTime).atZone(sourceEvent.getEndTime().getZone());
+        ZonedDateTime newStartTime = LocalDateTime.of(newDate, startTime).atZone(BRUSSELS_ZONE);
+        ZonedDateTime newEndTime = LocalDateTime.of(newDate, endTime).atZone(BRUSSELS_ZONE);
 
         String suffix = (place == null || place.isBlank()) ? "bibliotheek Ninove" : place;
         String formattedNewDate = newDate.format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
