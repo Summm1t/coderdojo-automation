@@ -24,6 +24,7 @@ public class CopyMailingService implements CopyMailingUseCase {
 
     private static final DateTimeFormatter INPUT_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy");
     private static final DateTimeFormatter OUTPUT_FORMATTER = DateTimeFormatter.ofPattern("MMMM yyyy", Locale.forLanguageTag("nl"));
+    private static final DateTimeFormatter FULL_DATE_FORMATTER = DateTimeFormatter.ofPattern("EEEE d MMMM yyyy", Locale.forLanguageTag("nl"));
 
     private final MailerLitePort mailerLitePort;
 
@@ -55,6 +56,7 @@ public class CopyMailingService implements CopyMailingUseCase {
 
         LocalDate date = LocalDate.parse(newDate, INPUT_FORMATTER);
         String formattedDate = OUTPUT_FORMATTER.format(date);
+        String fullFormattedDate = FULL_DATE_FORMATTER.format(date);
 
         String originalTitle = details.getTitle();
         // Title transformation: replace the old month year with new month year
@@ -65,6 +67,9 @@ public class CopyMailingService implements CopyMailingUseCase {
         // Update the Eventbrite registration link in the content
         // An Eventbrite registration link is in the format https://www.eventbrite.com/e/.*
         String newContent = updateContentLink(oldContent, eventbriteLink);
+
+        // Update the specific date sentence in the content
+        newContent = updateContentDate(newContent, fullFormattedDate);
 
         // Update the subject line
         String newSubject = updateTitle(details.getSubject(), formattedDate);
@@ -106,6 +111,29 @@ public class CopyMailingService implements CopyMailingUseCase {
             return linkMatcher.replaceAll(newLink);
         } else {
             log.warn("Eventbrite link pattern not found in campaign content.");
+            return content;
+        }
+    }
+
+    private String updateContentDate(String content, String newFullDate) {
+        if (content == null) {
+            return null;
+        }
+        // Sentence pattern: "De volgende Coderdojo gaat door op [date] in de"
+        // date pattern: "zondag 29 maart 2026"
+        // In Dutch: [dagnaam] [dag] [maand] [jaar]
+        String dayRegex = "(maandag|dinsdag|woensdag|donderdag|vrijdag|zaterdag|zondag)";
+        String monthRegex = "(januari|februari|maart|april|mei|juni|juli|augustus|september|oktober|november|december)";
+        String dateRegex = dayRegex + "\\s+\\d{1,2}\\s+" + monthRegex + "\\s+\\d{4}";
+
+        String sentenceRegex = "volgende Coderdojo gaat door op\\s+" + dateRegex;
+        Pattern pattern = Pattern.compile(sentenceRegex, Pattern.CASE_INSENSITIVE);
+        Matcher matcher = pattern.matcher(content);
+
+        if (matcher.find()) {
+            return matcher.replaceAll("volgende Coderdojo gaat door op " + newFullDate);
+        } else {
+            log.warn("Date sentence pattern not found in campaign content.");
             return content;
         }
     }

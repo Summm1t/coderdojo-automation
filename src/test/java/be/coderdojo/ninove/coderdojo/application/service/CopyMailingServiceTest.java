@@ -33,7 +33,7 @@ class CopyMailingServiceTest {
     @Test
     void copyMailing_ShouldSuccessfullyCopyAndUpdate() {
         // Given
-        String oldContent = "Hallo,\ninschrijven kan hier: https://www.eventbrite.com/e/registratie-coderdojo-ninove-1234567890\nGroeten!";
+        String oldContent = "De volgende Coderdojo gaat door op zondag 29 maart 2026 in de vernieuwe bibliotheek van Ninove, inschrijven kan hier : https://www.eventbrite.com/e/registratie-coderdojo-ninove-1234567890\nGroeten!";
         Map<String, Object> settings = Map.of("track_opens", "enabled");
         Campaign latest = Campaign.builder().id("1").title("Coderdojo Ninove Nieuwsbrief april 2026").build();
         Campaign details = Campaign.builder()
@@ -71,6 +71,7 @@ class CopyMailingServiceTest {
         assertThat(titleCaptor.getValue()).isEqualTo("Coderdojo Ninove Nieuwsbrief mei 2026");
         assertThat(contentCaptor.getValue()).contains("https://www.eventbrite.com/e/registratie-coderdojo-ninove-newlink");
         assertThat(contentCaptor.getValue()).doesNotContain("1234567890");
+        assertThat(contentCaptor.getValue()).contains("De volgende Coderdojo gaat door op zondag 17 mei 2026");
         assertThat(settingsCaptor.getValue()).isEqualTo(settings);
         assertThat(debugCaptor.getValue()).isFalse();
     }
