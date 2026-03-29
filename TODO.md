@@ -1,20 +1,32 @@
 # TODO
 
 ## General
-* Execute all commands in one command: `next-event`
-* Refactoring: make use of constants and enums for all possible values
+- [ ] Execute all commands in one command: `next-event`
+- [ ] Create new version + publish Docker image
+- [ ] Stop when there's a failure + show error message.
+- [ ] Refactoring: make use of constants and enums for all possible values
+
+## Whatsapp
+- [ ] Send message to coaches
+- [ ] Send reminder message to coaches + include subscribe link
+
+## Mail Huis van het kind
+- [ ] Send email to huis van het kind
+
+## Website
+- [ ] Update website with new date
 
 ## Eventbrite
-* Get eventlink after copying event
-* Change location
-* Publish event:
+- [ ] Get eventlink after copying event
+- [ ] Change location
+- [ ] Publish event:
     * Add CLI argument for publishing event: `publish`, optional and defaults to False
     * Publish event using Eventbrite API:
       https://www.eventbrite.com/platform/api#/reference/event/publish/publish-an-event
 
 ## Eventbrite - Mailerlite integration
 
-~~* Transfer new attendees to Mailerlite:
+- [X] Transfer new attendees to Mailerlite:
     * Add CLI argument for Mailerlite integration: `transfer-attendees` CLI command, with optional
       `event` argument, which takes a date for an event (in format dd/MM/yyyy), or `latest`. Default
       value for `event` is `latest`.
@@ -32,11 +44,11 @@
             * If there is no more information in the Eventbrite attendee: do nothing.
         * When the attendee does not exist in Mailerlite:
             * Add the attendee to Mailerlite Audience
-            * If the attendee does not want to receive emails: opt out in Mailerlite.~~
+            * If the attendee does not want to receive emails: opt out in Mailerlite.
 
 ## Mailerlite
 
-* Unsubscribe contacts: also archive them
+- [ ] Unsubscribe contacts: also archive them
 
 
 
