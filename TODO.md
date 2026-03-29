@@ -1,22 +1,48 @@
 # TODO
 
 ## General
+
 - [ ] Execute all commands in one command: `next-event`
 - [ ] Create new version + publish Docker image
 - [ ] Stop when there's a failure + show error message.
 - [ ] Refactoring: make use of constants and enums for all possible values
+- [ ] Documentation: add regular expressions and the consequences of changing events in Eventbrite
+  or campaigns in Mailerlite
+- [ ] Add backup of Eventbrite and Mailerlite templates
 
 ## Whatsapp
+
 - [ ] Send message to coaches
 - [ ] Send reminder message to coaches + include subscribe link
 
 ## Mail Huis van het kind
+
 - [ ] Send email to huis van het kind
 
+## Reminder
+
+- [ ] Create calendar events for:
+    - [ ] Event
+    - [ ] Reminder for coaches
+    - [ ] Some days before event:
+        - [ ] Catering
+        - [ ] Key to get in
+        - [ ] Check number of "Met uitnodiging" attendees, eventually open spaces for "Deelnemer"
+
+## Scratch
+
+- [ ] Create new collection
+
+## Tinkercademy
+
+- [ ] Create new class
+
 ## Website
+
 - [ ] Update website with new date
 
 ## Eventbrite
+
 - [ ] Get eventlink after copying event
 - [ ] Change location
 - [ ] Publish event:
@@ -34,7 +60,7 @@
     * Get the attendees for that event in Eventbrite. Don't use the attendee list endpoint, but use
       the "retrieve attendee
       report" (https://www.eventbrite.be/creator/reporting/api/reporting/attendees).
-    * You will 
+    * You will
     * Add the attendees to Mailerlite Subscribers:
         * When the attendee already exists in Mailerlite (based on email address):
             * If the attendee does not want to receive emails: check if they have opted out of
@@ -48,6 +74,7 @@
 
 ## Mailerlite
 
+- [ ] Change location
 - [ ] Unsubscribe contacts: also archive them
 
 
