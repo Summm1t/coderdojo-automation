@@ -2,9 +2,11 @@
 
 ## General
 * Execute all commands in one command: `next-event`
+* Refactoring: make use of constants and enums for all possible values
 
 ## Eventbrite
-
+* Get eventlink after copying event
+* Change location
 * Publish event:
     * Add CLI argument for publishing event: `publish`, optional and defaults to False
     * Publish event using Eventbrite API:

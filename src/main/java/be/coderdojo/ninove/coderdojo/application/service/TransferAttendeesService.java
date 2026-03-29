@@ -1,5 +1,6 @@
 package be.coderdojo.ninove.coderdojo.application.service;
 
+import static be.coderdojo.ninove.coderdojo.domain.model.Constants.INPUT_DATE_FORMAT;
 import static be.coderdojo.ninove.coderdojo.domain.model.Constants.LATEST;
 
 import be.coderdojo.ninove.coderdojo.application.port.in.TransferAttendeesUseCase;
@@ -34,7 +35,7 @@ public class TransferAttendeesService implements TransferAttendeesUseCase {
         } else {
             String formattedDate = eventDate;
             try {
-                LocalDate date = LocalDate.parse(eventDate, DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+                LocalDate date = LocalDate.parse(eventDate, DateTimeFormatter.ofPattern(INPUT_DATE_FORMAT));
                 formattedDate = date.format(DateTimeFormatter.ISO_LOCAL_DATE);
             } catch (Exception e) {
                 // assume it's already in yyyy-MM-dd or let the port handle it
@@ -77,7 +78,7 @@ public class TransferAttendeesService implements TransferAttendeesUseCase {
                     boolean needsUpdate = !ebAttendee.getFirstName().equals(mlAttendee.getFirstName()) ||
                             !ebAttendee.getLastName().equals(mlAttendee.getLastName()) ||
                             (ebAttendee.getTicketType() != mlAttendee.getTicketType());
-                    
+
                     if (needsUpdate) {
                         log.info("Updating subscriber info: {}", ebAttendee.getEmail());
                         mailerLitePort.updateSubscriber(ebAttendee, debug);

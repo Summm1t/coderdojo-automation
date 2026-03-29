@@ -1,10 +1,19 @@
 package be.coderdojo.ninove.coderdojo.application.service;
 
+import static be.coderdojo.ninove.coderdojo.domain.model.Constants.INPUT_DATE_FORMAT;
 import static be.coderdojo.ninove.coderdojo.domain.model.Constants.LATEST;
+import static be.coderdojo.ninove.coderdojo.domain.model.RegexConstants.DAY;
+import static be.coderdojo.ninove.coderdojo.domain.model.RegexConstants.EVENTBRITE_LINK;
+import static be.coderdojo.ninove.coderdojo.domain.model.RegexConstants.MONTH;
+import static be.coderdojo.ninove.coderdojo.domain.model.RegexConstants.MONTH_AND_YEAR;
+import static be.coderdojo.ninove.coderdojo.domain.model.RegexConstants.NEXT_EVENT_DATE;
+import static be.coderdojo.ninove.coderdojo.domain.model.RegexConstants.NEXT_EVENT_DATE_PREFIX;
+import static be.coderdojo.ninove.coderdojo.domain.model.RegexConstants.NEXT_EVENT_DATE_SENTENCE;
 
 import be.coderdojo.ninove.coderdojo.application.port.in.CopyMailingUseCase;
 import be.coderdojo.ninove.coderdojo.application.port.out.MailerLitePort;
 import be.coderdojo.ninove.coderdojo.domain.model.Campaign;
+import be.coderdojo.ninove.coderdojo.domain.model.RegexConstants;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -22,7 +31,9 @@ import java.util.regex.Pattern;
 public class CopyMailingService implements CopyMailingUseCase {
 
 
-    private static final DateTimeFormatter INPUT_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+    public static final Pattern MONTH_AND_YEAR_PATTERN = Pattern.compile(MONTH_AND_YEAR, Pattern.CASE_INSENSITIVE);
+    public static final Pattern EVENTBRITE_LINK_PATTERN = Pattern.compile(EVENTBRITE_LINK);
+    private static final DateTimeFormatter INPUT_FORMATTER = DateTimeFormatter.ofPattern(INPUT_DATE_FORMAT);
     private static final DateTimeFormatter OUTPUT_FORMATTER = DateTimeFormatter.ofPattern("MMMM yyyy", Locale.forLanguageTag("nl"));
     private static final DateTimeFormatter FULL_DATE_FORMATTER = DateTimeFormatter.ofPattern("EEEE d MMMM yyyy", Locale.forLanguageTag("nl"));
 
@@ -88,11 +99,7 @@ public class CopyMailingService implements CopyMailingUseCase {
         if (originalTitle == null) {
             return newMonthYear;
         }
-        // This regex tries to find "Month YYYY" at the end of the title
-        // In Dutch: januari, februari, maart, april, mei, juni, juli, augustus, september, oktober, november, december
-        String monthRegex = "(januari|februari|maart|april|mei|juni|juli|augustus|september|oktober|november|december)\\s+\\d{4}";
-        Pattern pattern = Pattern.compile(monthRegex, Pattern.CASE_INSENSITIVE);
-        Matcher matcher = pattern.matcher(originalTitle);
+        Matcher matcher = MONTH_AND_YEAR_PATTERN.matcher(originalTitle);
 
         if (matcher.find()) {
             return matcher.replaceFirst(newMonthYear);
@@ -103,9 +110,7 @@ public class CopyMailingService implements CopyMailingUseCase {
     }
 
     private String updateContentLink(String content, String newLink) {
-        String linkPatternStr = "https://www\\.eventbrite\\.[a-z.]+/e/[\\w-]+";
-        Pattern linkPattern = Pattern.compile(linkPatternStr);
-        Matcher linkMatcher = linkPattern.matcher(content);
+        Matcher linkMatcher = EVENTBRITE_LINK_PATTERN.matcher(content);
 
         if (linkMatcher.find()) {
             return linkMatcher.replaceAll(newLink);
@@ -119,19 +124,13 @@ public class CopyMailingService implements CopyMailingUseCase {
         if (content == null) {
             return null;
         }
-        // Sentence pattern: "De volgende Coderdojo gaat door op [date] in de"
-        // date pattern: "zondag 29 maart 2026"
-        // In Dutch: [dagnaam] [dag] [maand] [jaar]
-        String dayRegex = "(maandag|dinsdag|woensdag|donderdag|vrijdag|zaterdag|zondag)";
-        String monthRegex = "(januari|februari|maart|april|mei|juni|juli|augustus|september|oktober|november|december)";
-        String dateRegex = dayRegex + "\\s+\\d{1,2}\\s+" + monthRegex + "\\s+\\d{4}";
-
-        String sentenceRegex = "volgende Coderdojo gaat door op\\s+" + dateRegex;
-        Pattern pattern = Pattern.compile(sentenceRegex, Pattern.CASE_INSENSITIVE);
+        // Sentence pattern: "volgende Coderdojo gaat door op [date] in de"
+        // date pattern: "zondag 29 maart 2026" ([dagnaam] [dag] [maand] [jaar])
+        Pattern pattern = Pattern.compile(NEXT_EVENT_DATE_SENTENCE, Pattern.CASE_INSENSITIVE);
         Matcher matcher = pattern.matcher(content);
 
         if (matcher.find()) {
-            return matcher.replaceAll("volgende Coderdojo gaat door op " + newFullDate);
+            return matcher.replaceAll(NEXT_EVENT_DATE_PREFIX + " " + newFullDate);
         } else {
             log.warn("Date sentence pattern not found in campaign content.");
             return content;

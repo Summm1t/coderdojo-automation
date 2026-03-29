@@ -1,88 +1,93 @@
 package be.coderdojo.ninove.coderdojo.adapter.in.shell;
 
+import static be.coderdojo.ninove.coderdojo.domain.model.Constants.INPUT_DATE_FORMAT;
 import static be.coderdojo.ninove.coderdojo.domain.model.Constants.LATEST;
 
 import be.coderdojo.ninove.coderdojo.application.port.in.CopyEventUseCase;
 import be.coderdojo.ninove.coderdojo.application.port.in.UpdateTicketClassesUseCase;
 import be.coderdojo.ninove.coderdojo.domain.model.TicketClass;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.shell.standard.ShellComponent;
 import org.springframework.shell.standard.ShellMethod;
 import org.springframework.shell.standard.ShellOption;
 
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
 @Slf4j
 @ShellComponent
 @RequiredArgsConstructor
 public class EventShellAdapter {
 
-    private final CopyEventUseCase copyEventUseCase;
-    private final UpdateTicketClassesUseCase updateTicketClassesUseCase;
+  public static final DateTimeFormatter INPUT_DATE_FORMATTER = DateTimeFormatter.ofPattern(
+      INPUT_DATE_FORMAT);
+  private final CopyEventUseCase copyEventUseCase;
+  private final UpdateTicketClassesUseCase updateTicketClassesUseCase;
 
-    @ShellMethod(key = "copy-event", value = "Copy an existing event to a new date.")
-    public String copyEvent(
-            @ShellOption(value = "source-event", help = "Date of the event to copy (dd/MM/yyyy) or 'latest'") String sourceEvent,
-            @ShellOption(value = "date", help = "New event date (dd/MM/yyyy)") String date,
-            @ShellOption(value = "place", defaultValue = ShellOption.NULL, help = "Place for the new event") String place,
-            @ShellOption(value = "debug", defaultValue = "false", help = "Show details without modifying Eventbrite") boolean debug
-    ) {
-        log.debug("Received request to copy event: sourceEvent={}, date={}, place={}, debug={}", sourceEvent, date, place, debug);
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-        LocalDate localDate;
-        try {
-            localDate = LocalDate.parse(date, formatter);
-        } catch (java.time.format.DateTimeParseException e) {
-            return "Invalid date format. Please use 'dd/MM/yyyy' (e.m. 21/03/2026).";
-        }
-
-        return copyEventUseCase.copyEvent(sourceEvent, localDate, place, debug);
+  @ShellMethod(key = "copy-event", value = "Copy an existing event to a new date.")
+  public String copyEvent(
+      @ShellOption(value = "source-event", help = "Date of the event to copy (" + INPUT_DATE_FORMAT
+          + ") or '" + LATEST + "'") String sourceEvent,
+      @ShellOption(value = "date", help = "New event date (" + INPUT_DATE_FORMAT + ")") String date,
+      @ShellOption(value = "place", defaultValue = ShellOption.NULL, help = "Place for the new event") String place,
+      @ShellOption(value = "debug", defaultValue = "false", help = "Show details without modifying Eventbrite") boolean debug
+  ) {
+    log.debug("Received request to copy event: sourceEvent={}, date={}, place={}, debug={}",
+        sourceEvent, date, place, debug);
+    LocalDate localDate;
+    try {
+      localDate = LocalDate.parse(date, INPUT_DATE_FORMATTER);
+    } catch (java.time.format.DateTimeParseException e) {
+      return "Invalid date format. Please use '" + INPUT_DATE_FORMAT + "' (e.m. 21/03/2026).";
     }
 
-    @ShellMethod(key = "set-participants", value = "Set capacity and quantity_total for each ticket class.")
-    public String setParticipants(
-            @ShellOption(value = "event", defaultValue = LATEST, help = "Date of the event (dd/MM/yyyy) or 'latest'") String eventDate,
-            @ShellOption(value = "deelnemers", defaultValue = "20", help = "Capacity for 'Deelnemers'") int deelnemers,
-            @ShellOption(value = "vrijwilligers", defaultValue = "15", help = "Capacity for 'Vrijwilligers'") int vrijwilligers,
-            @ShellOption(value = "kind-van-vrijwilliger", defaultValue = "10", help = "Capacity for 'Kind van Vrijwilliger'") int kindVanVrijwilliger,
-            @ShellOption(value = "met-uitnodiging", defaultValue = "5", help = "Capacity for 'Met Uitnodiging'") int metUitnodiging,
-            @ShellOption(value = "debug", defaultValue = "false", help = "Show details without modifying Eventbrite") boolean debug
-    ) {
-        log.debug("Received request to set participants: event={}, deelnemers={}, vrijwilligers={}, kind={}, uitnodiging={}, debug={}",
-                eventDate, deelnemers, vrijwilligers, kindVanVrijwilliger, metUitnodiging, debug);
+    return copyEventUseCase.copyEvent(sourceEvent, localDate, place, debug);
+  }
 
-        Map<String, Integer> capacities = Map.of(
-                "deelnemers", deelnemers,
-                "vrijwilligers", vrijwilligers,
-                "kind-van-vrijwilliger", kindVanVrijwilliger,
-                "met-uitnodiging", metUitnodiging
-        );
+  @ShellMethod(key = "set-participants", value = "Set capacity and quantity_total for each ticket class.")
+  public String setParticipants(
+      @ShellOption(value = "event", defaultValue = LATEST, help = "Date of the event ("
+          + INPUT_DATE_FORMAT + ") or 'latest'") String eventDate,
+      @ShellOption(value = "deelnemers", defaultValue = "20", help = "Capacity for 'Deelnemers'") int deelnemers,
+      @ShellOption(value = "vrijwilligers", defaultValue = "15", help = "Capacity for 'Vrijwilligers'") int vrijwilligers,
+      @ShellOption(value = "kind-van-vrijwilliger", defaultValue = "10", help = "Capacity for 'Kind van Vrijwilliger'") int kindVanVrijwilliger,
+      @ShellOption(value = "met-uitnodiging", defaultValue = "5", help = "Capacity for 'Met Uitnodiging'") int metUitnodiging,
+      @ShellOption(value = "debug", defaultValue = "false", help = "Show details without modifying Eventbrite") boolean debug
+  ) {
+    log.debug(
+        "Received request to set participants: event={}, deelnemers={}, vrijwilligers={}, kind={}, uitnodiging={}, debug={}",
+        eventDate, deelnemers, vrijwilligers, kindVanVrijwilliger, metUitnodiging, debug);
 
-        String dateToUse = eventDate;
-        if (!LATEST.equalsIgnoreCase(eventDate)) {
-            DateTimeFormatter inputFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-            DateTimeFormatter outputFormatter = DateTimeFormatter.ISO_LOCAL_DATE;
-            try {
-                dateToUse = LocalDate.parse(eventDate, inputFormatter).format(outputFormatter);
-            } catch (java.time.format.DateTimeParseException e) {
-                return "Invalid date format. Please use 'dd/MM/yyyy' (e.g. 21/03/2026).";
-            }
-        }
+    Map<String, Integer> capacities = Map.of(
+        "deelnemers", deelnemers,
+        "vrijwilligers", vrijwilligers,
+        "kind-van-vrijwilliger", kindVanVrijwilliger,
+        "met-uitnodiging", metUitnodiging
+    );
 
-        List<TicketClass> updated = updateTicketClassesUseCase.setParticipants(dateToUse, capacities, debug);
-
-        if (updated.isEmpty()) {
-            return "No ticket classes were updated.";
-        }
-
-        return "Successfully updated ticket classes:\n" +
-                updated.stream()
-                        .map(tc -> String.format("- %s: %d", tc.getName(), tc.getCapacity()))
-                        .collect(Collectors.joining("\n"));
+    String dateToUse = eventDate;
+    if (!LATEST.equalsIgnoreCase(eventDate)) {
+      DateTimeFormatter outputFormatter = DateTimeFormatter.ISO_LOCAL_DATE;
+      try {
+        dateToUse = LocalDate.parse(eventDate, INPUT_DATE_FORMATTER).format(outputFormatter);
+      } catch (java.time.format.DateTimeParseException e) {
+        return "Invalid date format. Please use '" + INPUT_DATE_FORMAT + "' (e.g. 21/03/2026).";
+      }
     }
+
+    List<TicketClass> updated = updateTicketClassesUseCase.setParticipants(dateToUse, capacities,
+        debug);
+
+    if (updated.isEmpty()) {
+      return "No ticket classes were updated.";
+    }
+
+    return "Successfully updated ticket classes:\n" +
+        updated.stream()
+            .map(tc -> String.format("- %s: %d", tc.getName(), tc.getCapacity()))
+            .collect(Collectors.joining("\n"));
+  }
 }

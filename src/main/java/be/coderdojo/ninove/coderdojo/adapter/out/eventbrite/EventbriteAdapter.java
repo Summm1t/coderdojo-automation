@@ -1,5 +1,10 @@
 package be.coderdojo.ninove.coderdojo.adapter.out.eventbrite;
 
+import static be.coderdojo.ninove.coderdojo.domain.model.RegexConstants.ACHTERNAAM;
+import static be.coderdojo.ninove.coderdojo.domain.model.RegexConstants.OPTIN_ANSWER_TRUE;
+import static be.coderdojo.ninove.coderdojo.domain.model.RegexConstants.OPTIN_QUESTION;
+import static be.coderdojo.ninove.coderdojo.domain.model.RegexConstants.VOORNAAM;
+
 import be.coderdojo.ninove.coderdojo.application.port.out.EventbritePort;
 import be.coderdojo.ninove.coderdojo.domain.model.Attendee;
 import be.coderdojo.ninove.coderdojo.domain.model.Event;
@@ -184,12 +189,12 @@ public class EventbriteAdapter implements EventbritePort {
   @Override
   @SuppressWarnings("unchecked")
   public List<TicketClass> getTicketClasses(String eventId) {
-    log.debug("Fetching ticket classes for event ID: {}", eventId);
+    log.debug("Fetching Ticket types for event ID: {}", eventId);
     Map<String, Object> response = eventbriteRestClient.get()
         .uri("/events/{eventId}/ticket_classes/", eventId)
         .retrieve()
         .onStatus(status -> status == HttpStatus.NOT_FOUND, (req, res) -> {
-          log.error("Event {} not found when fetching ticket classes", eventId);
+          log.error("Event {} not found when fetching Ticket types", eventId);
           throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "Event not found");
         })
         .onStatus(status -> status.is4xxClientError() && status != HttpStatus.NOT_FOUND,
@@ -202,7 +207,7 @@ public class EventbriteAdapter implements EventbritePort {
         });
 
     if (response == null || !response.containsKey("ticket_classes")) {
-      log.warn("No ticket classes found in response for event: {}", eventId);
+      log.warn("No Ticket types found in response for event: {}", eventId);
       return List.of();
     }
 
@@ -216,7 +221,7 @@ public class EventbriteAdapter implements EventbritePort {
   @Override
   public TicketClass updateTicketClass(String eventId, String ticketClassId, int capacity,
       int quantityTotal) {
-    log.debug("Updating ticket class ID {} for event ID {} with capacity {} and quantity_total {}",
+    log.debug("Updating Ticket type ID {} for event ID {} with capacity {} and quantity_total {}",
         ticketClassId, eventId, capacity, quantityTotal);
 
     Map<String, Object> request = Map.of(
@@ -231,9 +236,9 @@ public class EventbriteAdapter implements EventbritePort {
         .body(request)
         .retrieve()
         .onStatus(status -> status == HttpStatus.NOT_FOUND, (req, res) -> {
-          log.error("Ticket class {} or event {} not found for updating", ticketClassId, eventId);
+          log.error("Ticket type {} or event {} not found for updating", ticketClassId, eventId);
           throw new HttpClientErrorException(HttpStatus.NOT_FOUND,
-              "Ticket class or event not found");
+              "Ticket type or event not found");
         })
         .onStatus(status -> status.is4xxClientError() && status != HttpStatus.NOT_FOUND,
             (req, res) -> {
@@ -306,14 +311,13 @@ public class EventbriteAdapter implements EventbritePort {
         String question = (String) answerMap.get("question");
         String answer = (String) answerMap.get("answer");
 
-        if ("Voornaam (ouder/voogd)".equals(question) && answer != null && !answer.isEmpty()) {
+        if (question != null && question.matches(VOORNAAM) && answer != null && !answer.isEmpty()) {
           firstName = answer;
-        } else if ("Achternaam (ouder/voogd)".equals(question) && answer != null
+        } else if (question != null && question.matches(ACHTERNAAM) && answer != null
             && !answer.isEmpty()) {
           lastName = answer;
-        } else if (question != null && question.matches(
-            ".*Mogen we jou via mail op de hoogte brengen over volgende CoderDojo-sessies\\?")) {
-          optIn = answer != null && answer.startsWith("Je mag mij contacteren");
+        } else if (question != null && question.matches(OPTIN_QUESTION)) {
+          optIn = answer != null && answer.matches(OPTIN_ANSWER_TRUE);
           optInFound = true;
         }
       }

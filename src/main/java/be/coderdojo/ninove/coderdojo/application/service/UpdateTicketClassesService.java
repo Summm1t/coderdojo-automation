@@ -1,6 +1,10 @@
 package be.coderdojo.ninove.coderdojo.application.service;
 
 import static be.coderdojo.ninove.coderdojo.domain.model.Constants.LATEST;
+import static be.coderdojo.ninove.coderdojo.domain.model.TicketType.DEELNEMER;
+import static be.coderdojo.ninove.coderdojo.domain.model.TicketType.KIND_VAN_VRIJWILLIGER;
+import static be.coderdojo.ninove.coderdojo.domain.model.TicketType.MET_UITNODIGING;
+import static be.coderdojo.ninove.coderdojo.domain.model.TicketType.VRIJWILLIGER;
 
 import be.coderdojo.ninove.coderdojo.application.port.in.UpdateTicketClassesUseCase;
 import be.coderdojo.ninove.coderdojo.application.port.out.EventbritePort;
@@ -20,10 +24,6 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class UpdateTicketClassesService implements UpdateTicketClassesUseCase {
 
-    public static final String DEELNEMER = "Deelnemer";
-    public static final String VRIJWILLIGER = "Vrijwilliger";
-    public static final String KIND_VAN_VRIJWILLIGER = "Kind van vrijwilliger";
-    public static final String MET_UITNODIGING = "Met uitnodiging";
     private final EventbritePort eventbritePort;
 
     @Override
@@ -50,22 +50,22 @@ public class UpdateTicketClassesService implements UpdateTicketClassesUseCase {
         for (TicketClass ticketClass : ticketClasses) {
             Integer newCapacity = null;
 
-            if (DEELNEMER.equalsIgnoreCase(ticketClass.getName())) {
+            if (DEELNEMER.getDescription().equalsIgnoreCase(ticketClass.getName())) {
                 newCapacity = capacities.get("deelnemers");
-            } else if (VRIJWILLIGER.equalsIgnoreCase(ticketClass.getName())) {
+            } else if (VRIJWILLIGER.getDescription().equalsIgnoreCase(ticketClass.getName())) {
                 newCapacity = capacities.get("vrijwilligers");
-            } else if (KIND_VAN_VRIJWILLIGER.equalsIgnoreCase(ticketClass.getName())) {
+            } else if (KIND_VAN_VRIJWILLIGER.getDescription().equalsIgnoreCase(ticketClass.getName())) {
                 newCapacity = capacities.get("kind-van-vrijwilliger");
-            } else if (MET_UITNODIGING.equalsIgnoreCase(ticketClass.getName())) {
+            } else if (MET_UITNODIGING.getDescription().equalsIgnoreCase(ticketClass.getName())) {
                 newCapacity = capacities.get("met-uitnodiging");
             }
 
             if (newCapacity != null) {
-                log.info("Updating ticket class '{}' (ID: {}) to capacity {}", ticketClass.getName(), ticketClass.getId(), newCapacity);
+                log.info("Updating Ticket type '{}' (ID: {}) to capacity {}", ticketClass.getName(), ticketClass.getId(), newCapacity);
                 if (!debug) {
                     updatedTicketClasses.add(eventbritePort.updateTicketClass(event.getId(), ticketClass.getId(), newCapacity, newCapacity));
                 } else {
-                    log.info("[DEBUG] Would update ticket class '{}' to capacity {}", ticketClass.getName(), newCapacity);
+                    log.info("[DEBUG] Would update Ticket type '{}' to capacity {}", ticketClass.getName(), newCapacity);
                     updatedTicketClasses.add(TicketClass.builder()
                             .id(ticketClass.getId())
                             .name(ticketClass.getName())
@@ -74,7 +74,7 @@ public class UpdateTicketClassesService implements UpdateTicketClassesUseCase {
                             .build());
                 }
             } else {
-                log.warn("Ticket class '{}' (ID: {}) did not match any criteria, skipping.", ticketClass.getName(), ticketClass.getId());
+                log.warn("Ticket type '{}' (ID: {}) did not match any criteria, skipping.", ticketClass.getName(), ticketClass.getId());
             }
         }
 

@@ -1,5 +1,6 @@
 package be.coderdojo.ninove.coderdojo.adapter.in.shell;
 
+import static be.coderdojo.ninove.coderdojo.domain.model.Constants.INPUT_DATE_FORMAT;
 import static be.coderdojo.ninove.coderdojo.domain.model.Constants.LATEST;
 
 import be.coderdojo.ninove.coderdojo.application.port.in.CopyMailingUseCase;
@@ -21,7 +22,7 @@ public class MailingShellAdapter {
     @ShellMethod(key = "copy-mailing", value = "Copy an existing campaign and update its content.")
     public String copyMailing(
             @ShellOption(value = {"original-campaign-title"}, defaultValue = LATEST, help = "Title of the existing campaign to copy, or 'latest'") String originalCampaignTitle,
-            @ShellOption(value = "date", help = "Date of the new campaign (dd/MM/yyyy)") String date,
+            @ShellOption(value = "date", help = "Date of the new campaign (" + INPUT_DATE_FORMAT + ")") String date,
             @ShellOption(value = "link", help = "Eventbrite registration link for the new campaign") String link,
             @ShellOption(value = "debug", defaultValue = "false", help = "Show details without modifying MailerLite") boolean debug
     ) {
@@ -31,7 +32,7 @@ public class MailingShellAdapter {
 
     @ShellMethod(key = "transfer-attendees", value = "Transfer attendees from Eventbrite to MailerLite.")
     public String transferAttendees(
-            @ShellOption(value = "event", defaultValue = LATEST, help = "Date of the event (dd/MM/yyyy) or 'latest'") String event,
+            @ShellOption(value = "event", defaultValue = LATEST, help = "Date of the event (" + INPUT_DATE_FORMAT + ") or 'latest'") String event,
             @ShellOption(value = "debug", defaultValue = "false", help = "Show details without modifying MailerLite") boolean debug
     ) {
         log.debug("Received request to transfer attendees: event={}, debug={}", event, debug);

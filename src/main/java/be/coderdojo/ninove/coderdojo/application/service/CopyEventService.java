@@ -1,5 +1,7 @@
 package be.coderdojo.ninove.coderdojo.application.service;
 
+import static be.coderdojo.ninove.coderdojo.domain.model.Constants.BRUSSELS_ZONE;
+import static be.coderdojo.ninove.coderdojo.domain.model.Constants.INPUT_DATE_FORMAT;
 import static be.coderdojo.ninove.coderdojo.domain.model.Constants.LATEST;
 
 import be.coderdojo.ninove.coderdojo.application.port.in.CopyEventUseCase;
@@ -23,7 +25,6 @@ import java.util.Optional;
 public class CopyEventService implements CopyEventUseCase {
 
     private final EventbritePort eventbritePort;
-    private static final ZoneId BRUSSELS_ZONE = ZoneId.of("Europe/Brussels");
 
     @Override
     public String copyEvent(String sourceEventDate, LocalDate newDate, String place, boolean debug) {
@@ -36,7 +37,7 @@ public class CopyEventService implements CopyEventUseCase {
             // Convert sourceEventDate from dd/MM/yyyy to yyyy-MM-dd if needed, or update port to handle it
             String formattedDate = sourceEventDate;
             try {
-                LocalDate date = LocalDate.parse(sourceEventDate, DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+                LocalDate date = LocalDate.parse(sourceEventDate, DateTimeFormatter.ofPattern(INPUT_DATE_FORMAT));
                 formattedDate = date.format(DateTimeFormatter.ISO_LOCAL_DATE);
             } catch (Exception e) {
                 // assume it's already in yyyy-MM-dd or let the port handle it
@@ -59,7 +60,7 @@ public class CopyEventService implements CopyEventUseCase {
         ZonedDateTime newEndTime = LocalDateTime.of(newDate, endTime).atZone(BRUSSELS_ZONE);
 
         String suffix = (place == null || place.isBlank()) ? "bibliotheek Ninove" : place;
-        String formattedNewDate = newDate.format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+        String formattedNewDate = newDate.format(DateTimeFormatter.ofPattern(INPUT_DATE_FORMAT));
         String newTitle = String.format("CoderDojo Ninove - %s - %s", formattedNewDate, suffix);
         log.debug("New event title: {}", newTitle);
 
