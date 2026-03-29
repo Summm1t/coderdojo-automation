@@ -2,14 +2,14 @@
 
 ## Eventbrite
 
-* Number of participants: set capacity and quantity_total for each ticket class
+~~* Number of participants: set capacity and quantity_total for each ticket class
     * Add CLI arguments for each class: `deelnemers`, `vrijwilligers`, `kind_van_vrijwilliger` and
       `met_uitnodiging`, all optional and defaults to deelnemers=20, vrijwilligers=15,
       kind_van_vrijwilliger=10, met_uitnodiging=5
     * Get all ticket classes for the event:
       https://www.eventbrite.com/platform/api#/reference/ticket-class/list/list-ticket-classes-by-event
     * Then, update the ticket classes with the new `capacity` and `quantity_total` with:
-      https://www.eventbrite.com/platform/api#/reference/ticket-class/update/update-a-ticket-class
+      https://www.eventbrite.com/platform/api#/reference/ticket-class/update/update-a-ticket-class~~
 
 * Publish event:
     * Add CLI argument for publishing event: `publish`, optional and defaults to False

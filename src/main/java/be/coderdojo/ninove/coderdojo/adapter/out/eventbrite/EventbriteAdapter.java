@@ -2,8 +2,10 @@ package be.coderdojo.ninove.coderdojo.adapter.out.eventbrite;
 
 import be.coderdojo.ninove.coderdojo.application.port.out.EventbritePort;
 import be.coderdojo.ninove.coderdojo.domain.model.Event;
+import be.coderdojo.ninove.coderdojo.domain.model.TicketClass;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -167,6 +169,65 @@ public class EventbriteAdapter implements EventbritePort {
     return mapToEvent(Objects.requireNonNull(response));
   }
 
+  @Override
+  @SuppressWarnings("unchecked")
+  public List<TicketClass> getTicketClasses(String eventId) {
+    log.debug("Fetching ticket classes for event ID: {}", eventId);
+    Map<String, Object> response = eventbriteRestClient.get()
+        .uri("/events/{eventId}/ticket_classes/", eventId)
+        .retrieve()
+        .onStatus(status -> status == HttpStatus.NOT_FOUND, (req, res) -> {
+          log.error("Event {} not found when fetching ticket classes", eventId);
+          throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "Event not found");
+        })
+        .onStatus(status -> status.is4xxClientError() && status != HttpStatus.NOT_FOUND, (req, res) -> {
+          log.error("Eventbrite API error: {} - {}", res.getStatusCode(), res.getStatusText());
+          throw new HttpClientErrorException(res.getStatusCode(), "Eventbrite API error: " + res.getStatusText());
+        })
+        .body(new ParameterizedTypeReference<>() {
+        });
+
+    if (response == null || !response.containsKey("ticket_classes")) {
+      log.warn("No ticket classes found in response for event: {}", eventId);
+      return List.of();
+    }
+
+    List<Map<String, Object>> ticketClassesData = (List<Map<String, Object>>) response.get("ticket_classes");
+    return ticketClassesData.stream()
+        .map(this::mapToTicketClass)
+        .toList();
+  }
+
+  @Override
+  public TicketClass updateTicketClass(String eventId, String ticketClassId, int capacity, int quantityTotal) {
+    log.debug("Updating ticket class ID {} for event ID {} with capacity {} and quantity_total {}",
+        ticketClassId, eventId, capacity, quantityTotal);
+
+    Map<String, Object> request = Map.of(
+        "ticket_class", Map.of(
+            "capacity", capacity,
+            "quantity_total", quantityTotal
+        )
+    );
+
+    Map<String, Object> response = eventbriteRestClient.post()
+        .uri("/events/{eventId}/ticket_classes/{ticketClassId}/", eventId, ticketClassId)
+        .body(request)
+        .retrieve()
+        .onStatus(status -> status == HttpStatus.NOT_FOUND, (req, res) -> {
+          log.error("Ticket class {} or event {} not found for updating", ticketClassId, eventId);
+          throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "Ticket class or event not found");
+        })
+        .onStatus(status -> status.is4xxClientError() && status != HttpStatus.NOT_FOUND, (req, res) -> {
+          log.error("Eventbrite API error: {} - {}", res.getStatusCode(), res.getStatusText());
+          throw new HttpClientErrorException(res.getStatusCode(), "Eventbrite API error: " + res.getStatusText());
+        })
+        .body(new ParameterizedTypeReference<>() {
+        });
+
+    return mapToTicketClass(Objects.requireNonNull(response));
+  }
+
   private String toFormData(Map<String, Object> params) {
     return params.entrySet().stream()
         .map(e -> java.net.URLEncoder.encode(e.getKey(), java.nio.charset.StandardCharsets.UTF_8)
@@ -193,6 +254,24 @@ public class EventbriteAdapter implements EventbritePort {
         .startTime(ZonedDateTime.parse(startTimeStr))
         .endTime(ZonedDateTime.parse(endTimeStr))
         .url(url)
+        .build();
+  }
+
+  @SuppressWarnings("unchecked")
+  private TicketClass mapToTicketClass(Map<String, Object> ticketClassData) {
+    if (ticketClassData.containsKey("ticket_class")) {
+      ticketClassData = (Map<String, Object>) ticketClassData.get("ticket_class");
+    }
+    String id = (String) ticketClassData.get("id");
+    String name = (String) ticketClassData.get("name");
+    Integer capacity = (Integer) ticketClassData.get("capacity");
+    Integer quantityTotal = (Integer) ticketClassData.get("quantity_total");
+
+    return TicketClass.builder()
+        .id(id)
+        .name(name)
+        .capacity(capacity)
+        .quantityTotal(quantityTotal)
         .build();
   }
 }

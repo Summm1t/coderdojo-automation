@@ -115,6 +115,25 @@ Copies an existing event to a new date.
 * `--debug`: (Optional, default: `false`) If set to `true`, the application will show the details of
   the event it would create without actually making any changes on Eventbrite.
 
+### `set-participants`
+
+Sets the capacity and quantity_total for each ticket class for a specific event.
+
+**Usage:**
+`set-participants [--event <date|latest>] [--deelnemers <count>] [--vrijwilligers <count>] [--kind-van-vrijwilliger <count>] [--met-uitnodiging <count>] [--debug <true|false>]`
+
+**Parameters:**
+
+* `--event`: (Optional, default: `latest`) Date of the event (format: `dd/MM/yyyy`) or the string
+  `latest` to pick the most recent one.
+* `--deelnemers`: (Optional, default: `20`) Capacity for the "Deelnemers" ticket class.
+* `--vrijwilligers`: (Optional, default: `15`) Capacity for the "Vrijwilliger" ticket class.
+* `--kind-van-vrijwilliger`: (Optional, default: `10`) Capacity for the "Kind van vrijwilliger" ticket
+  class.
+* `--met-uitnodiging`: (Optional, default: `5`) Capacity for the "Met uitnodiging" ticket class.
+* `--debug`: (Optional, default: `false`) If set to `true`, the application will show the details of
+  the updates it would make without actually making any changes on Eventbrite.
+
 ### `copy-mailing`
 
 Copies the latest mailing campaign in MailerLite, updates its title, replaces specific date-related

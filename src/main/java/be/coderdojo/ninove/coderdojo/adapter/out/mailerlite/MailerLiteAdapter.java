@@ -23,7 +23,7 @@ public class MailerLiteAdapter implements MailerLitePort {
   public Optional<Campaign> findLatestCampaign() {
     log.debug("Fetching latest campaigns from MailerLite");
     Map<String, Object> response = mailerLiteRestClient.get()
-        .uri("/campaigns?limit=100")
+        .uri("/campaigns?limit=1")
         .retrieve()
         .body(new ParameterizedTypeReference<>() {
         });
