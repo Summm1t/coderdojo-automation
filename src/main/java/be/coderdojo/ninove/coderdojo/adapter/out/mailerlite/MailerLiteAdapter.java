@@ -83,17 +83,33 @@ public class MailerLiteAdapter implements MailerLitePort {
 
   @Override
   @SuppressWarnings("unchecked")
-  public Campaign createCampaign(String title, String content, boolean debug) {
+  public Campaign createCampaign(String title, String content, String fromName, String fromEmail, String subject,
+                                 List<String> groups, List<String> segments, String languageId, Map<String, Object> settings, boolean debug) {
     log.debug("Creating new campaign with title: {}, debug: {}", title, debug);
 
-    Map<String, Object> request = Map.of(
-        "name", title,
-        "type", "regular",
-        "emails", List.of(Map.of(
-            "subject", title,
-            "content", content
-        ))
+    Map<String, Object> emailRequest = Map.of(
+        "subject", subject != null ? subject : title,
+        "content", content,
+        "from_name", fromName,
+        "from", fromEmail
     );
+
+    java.util.HashMap<String, Object> request = new java.util.HashMap<>();
+    request.put("name", title);
+    request.put("type", "regular");
+    request.put("emails", List.of(emailRequest));
+    if (groups != null && !groups.isEmpty()) {
+      request.put("groups", groups);
+    }
+    if (segments != null && !segments.isEmpty()) {
+      request.put("segments", segments);
+    }
+    if (languageId != null) {
+      request.put("language_id", languageId);
+    }
+    if (settings != null && !settings.isEmpty()) {
+      request.put("settings", settings);
+    }
 
     if (debug) {
       log.info("DEBUG MODE: POST to /campaigns skipped. Title: {}, Content preview: {}", title,
@@ -103,6 +119,13 @@ public class MailerLiteAdapter implements MailerLitePort {
           .title(title)
           .content(content)
           .status("draft")
+          .fromName(fromName)
+          .fromEmail(fromEmail)
+          .subject(subject != null ? subject : title)
+          .groups(groups)
+          .segments(segments)
+          .languageId(languageId)
+          .settings(settings)
           .build();
     } else {
       Map<String, Object> response = mailerLiteRestClient.post()
@@ -115,17 +138,35 @@ public class MailerLiteAdapter implements MailerLitePort {
     }
   }
 
+  @SuppressWarnings("unchecked")
   private Campaign mapToCampaign(Map<String, Object> data) {
     String id = (String) data.get("id");
     String name = (String) data.get("name");
     String status = (String) data.get("status");
+    String languageId = null;
+    if (data.containsKey("language_id")) {
+      Object langIdObj = data.get("language_id");
+      languageId = langIdObj != null ? langIdObj.toString() : null;
+    }
+
+    List<String> groups = (List<String>) data.get("groups");
+    List<String> segments = (List<String>) data.get("segments");
+    Map<String, Object> settings = (Map<String, Object>) data.get("settings");
 
     // Content might be inside emails list for regular campaigns
     String content = "";
+    String fromName = null;
+    String fromEmail = null;
+    String subject = null;
+
     if (data.containsKey("emails")) {
       List<Map<String, Object>> emails = (List<Map<String, Object>>) data.get("emails");
       if (emails != null && !emails.isEmpty()) {
-        content = (String) emails.get(0).get("content");
+        Map<String, Object> firstEmail = emails.get(0);
+        content = (String) firstEmail.get("content");
+        fromName = (String) firstEmail.get("from_name");
+        fromEmail = (String) firstEmail.get("from");
+        subject = (String) firstEmail.get("subject");
       }
     }
 
@@ -134,6 +175,13 @@ public class MailerLiteAdapter implements MailerLitePort {
         .title(name)
         .content(content)
         .status(status)
+        .fromName(fromName)
+        .fromEmail(fromEmail)
+        .subject(subject)
+        .groups(groups)
+        .segments(segments)
+        .languageId(languageId)
+        .settings(settings)
         .build();
   }
 }

@@ -66,7 +66,11 @@ public class CopyMailingService implements CopyMailingUseCase {
         // An Eventbrite registration link is in the format https://www.eventbrite.com/e/.*
         String newContent = updateContentLink(oldContent, eventbriteLink);
 
-        Campaign created = mailerLitePort.createCampaign(newTitle, newContent, debug);
+        // Update the subject line
+        String newSubject = updateTitle(details.getSubject(), formattedDate);
+
+        Campaign created = mailerLitePort.createCampaign(newTitle, newContent, details.getFromName(), details.getFromEmail(), newSubject,
+                details.getGroups(), details.getSegments(), details.getLanguageId(), details.getSettings(), debug);
         if (debug) {
             return "DEBUG MODE: New mailing campaign would be:\n" +
                     "Title: " + newTitle + "\n" +
@@ -76,6 +80,9 @@ public class CopyMailingService implements CopyMailingUseCase {
     }
 
     private String updateTitle(String originalTitle, String newMonthYear) {
+        if (originalTitle == null) {
+            return newMonthYear;
+        }
         // This regex tries to find "Month YYYY" at the end of the title
         // In Dutch: januari, februari, maart, april, mei, juni, juli, augustus, september, oktober, november, december
         String monthRegex = "(januari|februari|maart|april|mei|juni|juli|augustus|september|oktober|november|december)\\s+\\d{4}";

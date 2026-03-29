@@ -9,6 +9,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.Map;
 import java.util.Optional;
 
 import static be.coderdojo.ninove.coderdojo.domain.model.Constants.LATEST;
@@ -33,13 +34,19 @@ class CopyMailingServiceTest {
     void copyMailing_ShouldSuccessfullyCopyAndUpdate() {
         // Given
         String oldContent = "Hallo,\ninschrijven kan hier: https://www.eventbrite.com/e/registratie-coderdojo-ninove-1234567890\nGroeten!";
+        Map<String, Object> settings = Map.of("track_opens", "enabled");
         Campaign latest = Campaign.builder().id("1").title("Coderdojo Ninove Nieuwsbrief april 2026").build();
-        Campaign details = Campaign.builder().id("1").title("Coderdojo Ninove Nieuwsbrief april 2026").content(oldContent).build();
+        Campaign details = Campaign.builder()
+                .id("1")
+                .title("Coderdojo Ninove Nieuwsbrief april 2026")
+                .content(oldContent)
+                .settings(settings)
+                .build();
         Campaign created = Campaign.builder().id("2").title("Coderdojo Ninove Nieuwsbrief mei 2026").build();
 
         when(mailerLitePort.findLatestCampaign()).thenReturn(Optional.of(latest));
         when(mailerLitePort.getCampaignDetails("1")).thenReturn(Optional.of(details));
-        when(mailerLitePort.createCampaign(anyString(), anyString(), anyBoolean())).thenReturn(created);
+        when(mailerLitePort.createCampaign(anyString(), anyString(), any(), any(), anyString(), any(), any(), any(), any(), anyBoolean())).thenReturn(created);
 
         // When
         String result = copyMailingService.copyMailing(LATEST, "17/05/2026", "https://www.eventbrite.com/e/registratie-coderdojo-ninove-newlink", false);
@@ -50,12 +57,21 @@ class CopyMailingServiceTest {
 
         ArgumentCaptor<String> titleCaptor = ArgumentCaptor.forClass(String.class);
         ArgumentCaptor<String> contentCaptor = ArgumentCaptor.forClass(String.class);
+        ArgumentCaptor<String> fromNameCaptor = ArgumentCaptor.forClass(String.class);
+        ArgumentCaptor<String> fromEmailCaptor = ArgumentCaptor.forClass(String.class);
+        ArgumentCaptor<String> subjectCaptor = ArgumentCaptor.forClass(String.class);
+        ArgumentCaptor<java.util.List> groupsCaptor = ArgumentCaptor.forClass(java.util.List.class);
+        ArgumentCaptor<java.util.List> segmentsCaptor = ArgumentCaptor.forClass(java.util.List.class);
+        ArgumentCaptor<String> languageIdCaptor = ArgumentCaptor.forClass(String.class);
+        ArgumentCaptor<Map> settingsCaptor = ArgumentCaptor.forClass(Map.class);
         ArgumentCaptor<Boolean> debugCaptor = ArgumentCaptor.forClass(Boolean.class);
-        verify(mailerLitePort).createCampaign(titleCaptor.capture(), contentCaptor.capture(), debugCaptor.capture());
+        verify(mailerLitePort).createCampaign(titleCaptor.capture(), contentCaptor.capture(), fromNameCaptor.capture(), fromEmailCaptor.capture(),
+                subjectCaptor.capture(), groupsCaptor.capture(), segmentsCaptor.capture(), languageIdCaptor.capture(), settingsCaptor.capture(), debugCaptor.capture());
 
         assertThat(titleCaptor.getValue()).isEqualTo("Coderdojo Ninove Nieuwsbrief mei 2026");
         assertThat(contentCaptor.getValue()).contains("https://www.eventbrite.com/e/registratie-coderdojo-ninove-newlink");
         assertThat(contentCaptor.getValue()).doesNotContain("1234567890");
+        assertThat(settingsCaptor.getValue()).isEqualTo(settings);
         assertThat(debugCaptor.getValue()).isFalse();
     }
 
@@ -70,7 +86,7 @@ class CopyMailingServiceTest {
 
         when(mailerLitePort.findCampaignByTitle(specificTitle)).thenReturn(Optional.of(original));
         when(mailerLitePort.getCampaignDetails("10")).thenReturn(Optional.of(details));
-        when(mailerLitePort.createCampaign(anyString(), anyString(), anyBoolean())).thenReturn(created);
+        when(mailerLitePort.createCampaign(anyString(), anyString(), any(), any(), any(), any(), any(), any(), any(), anyBoolean())).thenReturn(created);
 
         // When
         String result = copyMailingService.copyMailing(specificTitle, "15/02/2026", "https://www.eventbrite.com/e/new-link", false);
@@ -78,7 +94,7 @@ class CopyMailingServiceTest {
         // Then
         assertThat(result).contains("New mailing campaign created");
         verify(mailerLitePort).findCampaignByTitle(specificTitle);
-        verify(mailerLitePort).createCampaign(eq("Coderdojo Ninove Nieuwsbrief februari 2026"), anyString(), eq(false));
+        verify(mailerLitePort).createCampaign(eq("Coderdojo Ninove Nieuwsbrief februari 2026"), anyString(), any(), any(), any(), any(), any(), any(), any(), eq(false));
     }
 
     @Test
@@ -97,7 +113,7 @@ class CopyMailingServiceTest {
         // Then
         assertThat(result).startsWith("DEBUG MODE:");
         assertThat(result).contains("Coderdojo Ninove Nieuwsbrief mei 2026");
-        verify(mailerLitePort).createCampaign(anyString(), anyString(), eq(true));
+        verify(mailerLitePort).createCampaign(anyString(), anyString(), any(), any(), any(), any(), any(), any(), any(), eq(true));
     }
 
     @Test
@@ -116,7 +132,7 @@ class CopyMailingServiceTest {
 
         // Then
         ArgumentCaptor<String> contentCaptor = ArgumentCaptor.forClass(String.class);
-        verify(mailerLitePort).createCampaign(anyString(), contentCaptor.capture(), eq(true));
+        verify(mailerLitePort).createCampaign(anyString(), contentCaptor.capture(), any(), any(), any(), any(), any(), any(), any(), eq(true));
         assertThat(contentCaptor.getValue()).contains(newLink);
         assertThat(contentCaptor.getValue()).doesNotContain("old-link-12345");
     }
