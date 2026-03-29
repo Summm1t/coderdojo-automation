@@ -16,3 +16,8 @@ eventbrite:
     token: ${EVENTBRITE_API_TOKEN:placeholder}
     base-url: https://www.eventbriteapi.com/v3
     organization-id: ${EVENTBRITE_ORG_ID:placeholder}
+
+mailerlite:
+  api:
+    token: ${MAILERLITE_API_TOKEN:placeholder}
+    base-url: https://connect.mailerlite.com/api

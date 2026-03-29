@@ -44,3 +44,4 @@ build/
 /application.log
 /application.log.*
 /sandbox
+.junie
