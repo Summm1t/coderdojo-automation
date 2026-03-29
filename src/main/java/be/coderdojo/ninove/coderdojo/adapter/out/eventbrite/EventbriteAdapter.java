@@ -1,15 +1,19 @@
 package be.coderdojo.ninove.coderdojo.adapter.out.eventbrite;
 
 import be.coderdojo.ninove.coderdojo.application.port.out.EventbritePort;
+import be.coderdojo.ninove.coderdojo.domain.model.Attendee;
 import be.coderdojo.ninove.coderdojo.domain.model.Event;
 import be.coderdojo.ninove.coderdojo.domain.model.TicketClass;
+import be.coderdojo.ninove.coderdojo.domain.model.TicketType;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -41,10 +45,12 @@ public class EventbriteAdapter implements EventbritePort {
         .onStatus(status -> status == HttpStatus.NOT_FOUND, (req, res) -> {
           log.warn("Organization {} not found in Eventbrite", organizationId);
         })
-        .onStatus(status -> status.is4xxClientError() && status != HttpStatus.NOT_FOUND, (req, res) -> {
-          log.error("Eventbrite API error: {} - {}", res.getStatusCode(), res.getStatusText());
-          throw new HttpClientErrorException(res.getStatusCode(), "Eventbrite API error: " + res.getStatusText());
-        })
+        .onStatus(status -> status.is4xxClientError() && status != HttpStatus.NOT_FOUND,
+            (req, res) -> {
+              log.error("Eventbrite API error: {} - {}", res.getStatusCode(), res.getStatusText());
+              throw new HttpClientErrorException(res.getStatusCode(),
+                  "Eventbrite API error: " + res.getStatusText());
+            })
         .body(new ParameterizedTypeReference<>() {
         });
 
@@ -74,10 +80,12 @@ public class EventbriteAdapter implements EventbritePort {
         .onStatus(status -> status == HttpStatus.NOT_FOUND, (req, res) -> {
           log.warn("Organization {} not found in Eventbrite", organizationId);
         })
-        .onStatus(status -> status.is4xxClientError() && status != HttpStatus.NOT_FOUND, (req, res) -> {
-          log.error("Eventbrite API error: {} - {}", res.getStatusCode(), res.getStatusText());
-          throw new HttpClientErrorException(res.getStatusCode(), "Eventbrite API error: " + res.getStatusText());
-        })
+        .onStatus(status -> status.is4xxClientError() && status != HttpStatus.NOT_FOUND,
+            (req, res) -> {
+              log.error("Eventbrite API error: {} - {}", res.getStatusCode(), res.getStatusText());
+              throw new HttpClientErrorException(res.getStatusCode(),
+                  "Eventbrite API error: " + res.getStatusText());
+            })
         .body(new ParameterizedTypeReference<>() {
         });
 
@@ -116,10 +124,12 @@ public class EventbriteAdapter implements EventbritePort {
           log.error("Event {} not found for copying", eventId);
           throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "Event not found");
         })
-        .onStatus(status -> status.is4xxClientError() && status != HttpStatus.NOT_FOUND, (req, res) -> {
-          log.error("Eventbrite API error: {} - {}", res.getStatusCode(), res.getStatusText());
-          throw new HttpClientErrorException(res.getStatusCode(), "Eventbrite API error: " + res.getStatusText());
-        })
+        .onStatus(status -> status.is4xxClientError() && status != HttpStatus.NOT_FOUND,
+            (req, res) -> {
+              log.error("Eventbrite API error: {} - {}", res.getStatusCode(), res.getStatusText());
+              throw new HttpClientErrorException(res.getStatusCode(),
+                  "Eventbrite API error: " + res.getStatusText());
+            })
         .body(new ParameterizedTypeReference<>() {
         });
 
@@ -159,10 +169,12 @@ public class EventbriteAdapter implements EventbritePort {
           log.error("Event {} not found for updating", eventId);
           throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "Event not found");
         })
-        .onStatus(status -> status.is4xxClientError() && status != HttpStatus.NOT_FOUND, (req, res) -> {
-          log.error("Eventbrite API error: {} - {}", res.getStatusCode(), res.getStatusText());
-          throw new HttpClientErrorException(res.getStatusCode(), "Eventbrite API error: " + res.getStatusText());
-        })
+        .onStatus(status -> status.is4xxClientError() && status != HttpStatus.NOT_FOUND,
+            (req, res) -> {
+              log.error("Eventbrite API error: {} - {}", res.getStatusCode(), res.getStatusText());
+              throw new HttpClientErrorException(res.getStatusCode(),
+                  "Eventbrite API error: " + res.getStatusText());
+            })
         .body(new ParameterizedTypeReference<>() {
         });
 
@@ -180,10 +192,12 @@ public class EventbriteAdapter implements EventbritePort {
           log.error("Event {} not found when fetching ticket classes", eventId);
           throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "Event not found");
         })
-        .onStatus(status -> status.is4xxClientError() && status != HttpStatus.NOT_FOUND, (req, res) -> {
-          log.error("Eventbrite API error: {} - {}", res.getStatusCode(), res.getStatusText());
-          throw new HttpClientErrorException(res.getStatusCode(), "Eventbrite API error: " + res.getStatusText());
-        })
+        .onStatus(status -> status.is4xxClientError() && status != HttpStatus.NOT_FOUND,
+            (req, res) -> {
+              log.error("Eventbrite API error: {} - {}", res.getStatusCode(), res.getStatusText());
+              throw new HttpClientErrorException(res.getStatusCode(),
+                  "Eventbrite API error: " + res.getStatusText());
+            })
         .body(new ParameterizedTypeReference<>() {
         });
 
@@ -192,14 +206,16 @@ public class EventbriteAdapter implements EventbritePort {
       return List.of();
     }
 
-    List<Map<String, Object>> ticketClassesData = (List<Map<String, Object>>) response.get("ticket_classes");
+    List<Map<String, Object>> ticketClassesData = (List<Map<String, Object>>) response.get(
+        "ticket_classes");
     return ticketClassesData.stream()
         .map(this::mapToTicketClass)
         .toList();
   }
 
   @Override
-  public TicketClass updateTicketClass(String eventId, String ticketClassId, int capacity, int quantityTotal) {
+  public TicketClass updateTicketClass(String eventId, String ticketClassId, int capacity,
+      int quantityTotal) {
     log.debug("Updating ticket class ID {} for event ID {} with capacity {} and quantity_total {}",
         ticketClassId, eventId, capacity, quantityTotal);
 
@@ -216,16 +232,105 @@ public class EventbriteAdapter implements EventbritePort {
         .retrieve()
         .onStatus(status -> status == HttpStatus.NOT_FOUND, (req, res) -> {
           log.error("Ticket class {} or event {} not found for updating", ticketClassId, eventId);
-          throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "Ticket class or event not found");
+          throw new HttpClientErrorException(HttpStatus.NOT_FOUND,
+              "Ticket class or event not found");
         })
-        .onStatus(status -> status.is4xxClientError() && status != HttpStatus.NOT_FOUND, (req, res) -> {
-          log.error("Eventbrite API error: {} - {}", res.getStatusCode(), res.getStatusText());
-          throw new HttpClientErrorException(res.getStatusCode(), "Eventbrite API error: " + res.getStatusText());
-        })
+        .onStatus(status -> status.is4xxClientError() && status != HttpStatus.NOT_FOUND,
+            (req, res) -> {
+              log.error("Eventbrite API error: {} - {}", res.getStatusCode(), res.getStatusText());
+              throw new HttpClientErrorException(res.getStatusCode(),
+                  "Eventbrite API error: " + res.getStatusText());
+            })
         .body(new ParameterizedTypeReference<>() {
         });
 
     return mapToTicketClass(Objects.requireNonNull(response));
+  }
+
+  @Override
+  @SuppressWarnings("unchecked")
+  public List<Attendee> getAttendees(String eventId) {
+    log.debug("Fetching attendees for event: {}", eventId);
+    Set<Attendee> allAttendees = new LinkedHashSet<>();
+    boolean hasMoreItems = true;
+    String continuation = null;
+
+    while (hasMoreItems) {
+      String uri = "/events/" + eventId + "/attendees/";
+      if (continuation != null) {
+        uri = uri + "?continuation=" + continuation;
+      }
+
+      Map<String, Object> response = eventbriteRestClient.get()
+          .uri(uri)
+          .retrieve()
+          .body(new ParameterizedTypeReference<>() {
+          });
+
+      if (response != null && response.containsKey("attendees")) {
+        List<Map<String, Object>> attendeesData = (List<Map<String, Object>>) response.get(
+            "attendees");
+        for (Map<String, Object> attendeeData : attendeesData) {
+          Attendee attendee = mapToAttendee(attendeeData);
+          if (attendee.getEmail() != null) {
+            allAttendees.add(attendee);
+          }
+        }
+
+        Map<String, Object> pagination = (Map<String, Object>) response.get("pagination");
+        hasMoreItems = (boolean) pagination.get("has_more_items");
+        continuation = (String) pagination.get("continuation");
+      } else {
+        hasMoreItems = false;
+      }
+    }
+
+    return new ArrayList<>(allAttendees);
+  }
+
+  @SuppressWarnings("unchecked")
+  private Attendee mapToAttendee(Map<String, Object> attendeeData) {
+    Map<String, Object> profile = (Map<String, Object>) attendeeData.get("profile");
+    String email = (String) profile.get("email");
+    String firstName = (String) profile.get("first_name");
+    String lastName = (String) profile.get("last_name");
+    boolean optInFound = false;
+    boolean optIn = true;
+
+    String ticketClassName = (String) attendeeData.get("ticket_class_name");
+    TicketType ticketType = TicketType.fromDescription(ticketClassName);
+
+    if (attendeeData.containsKey("answers")) {
+      List<Map<String, Object>> answers = (List<Map<String, Object>>) attendeeData.get("answers");
+      for (Map<String, Object> answerMap : answers) {
+        String question = (String) answerMap.get("question");
+        String answer = (String) answerMap.get("answer");
+
+        if ("Voornaam (ouder/voogd)".equals(question) && answer != null && !answer.isEmpty()) {
+          firstName = answer;
+        } else if ("Achternaam (ouder/voogd)".equals(question) && answer != null
+            && !answer.isEmpty()) {
+          lastName = answer;
+        } else if (question != null && question.matches(
+            ".*Mogen we jou via mail op de hoogte brengen over volgende CoderDojo-sessies\\?")) {
+          optIn = answer != null && answer.startsWith("Je mag mij contacteren");
+          optInFound = true;
+        }
+      }
+    }
+
+    if (!optInFound) {
+      optIn = false;
+    }
+
+    return Attendee.builder()
+        .id((String) attendeeData.get("id"))
+        .firstName(firstName)
+        .lastName(lastName)
+        .email(email)
+        .optIn(optIn)
+        .ticketType(ticketType)
+        .build();
   }
 
   private String toFormData(Map<String, Object> params) {

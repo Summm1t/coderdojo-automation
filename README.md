@@ -127,14 +127,14 @@ Sets the capacity and quantity_total for each ticket class for a specific event.
 * `--event`: (Optional, default: `latest`) Date of the event (format: `dd/MM/yyyy`) or the string
   `latest` to pick the most recent one.
 * `--deelnemers`: (Optional, default: `20`) Capacity for the "Deelnemers" ticket class.
-* `--vrijwilligers`: (Optional, default: `15`) Capacity for the "Vrijwilliger" ticket class.
+* `--vrijwilligers`: (Optional, default: `15`) Capacity for the "Vrijwilligers" ticket class.
 * `--kind-van-vrijwilliger`: (Optional, default: `10`) Capacity for the "Kind van vrijwilliger" ticket
   class.
 * `--met-uitnodiging`: (Optional, default: `5`) Capacity for the "Met uitnodiging" ticket class.
 * `--debug`: (Optional, default: `false`) If set to `true`, the application will show the details of
   the updates it would make without actually making any changes on Eventbrite.
 
-### `campaign`
+### `copy-mailing`
 
 Copies an existing mailing campaign in MailerLite and updates its title, registration link, and
 content based on a new date.
@@ -151,6 +151,20 @@ content based on a new date.
 * `--link`: The new Eventbrite registration link (format: `https://www.eventbrite.com/e/...`).
 * `--debug`: (Optional, default: `false`) If set to `true`, the application will show the details of
   the campaign it would create without actually making any changes in MailerLite.
+
+### `transfer-attendees`
+
+Transfers attendees from Eventbrite to MailerLite.
+
+**Usage:**
+`transfer-attendees [--event <date|latest>] [--debug <true|false>]`
+
+**Parameters:**
+
+* `--event`: (Optional, default: `latest`) Date of the event (format: `dd/MM/yyyy`) or the string
+  `latest` to pick the most recent past event.
+* `--debug`: (Optional, default: `false`) If set to `true`, the application will show the details of
+  the transfers it would make without actually making any changes in MailerLite.
 
 ## Development
 

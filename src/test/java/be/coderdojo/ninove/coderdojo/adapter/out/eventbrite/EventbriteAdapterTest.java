@@ -1,6 +1,8 @@
 package be.coderdojo.ninove.coderdojo.adapter.out.eventbrite;
 
+import be.coderdojo.ninove.coderdojo.domain.model.Attendee;
 import be.coderdojo.ninove.coderdojo.domain.model.Event;
+import be.coderdojo.ninove.coderdojo.domain.model.TicketType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
@@ -137,5 +139,140 @@ class EventbriteAdapterTest {
 
         assertThat(updatedEvent.getName()).isEqualTo("Updated Event");
         assertThat(updatedEvent.getUrl()).isEqualTo("http://updated-event.url");
+    }
+
+    @Test
+    void getAttendees_shouldReturnAttendeesWithAnswers() {
+        String responseJson = """
+            {
+                "pagination": {
+                    "has_more_items": false,
+                    "continuation": null
+                },
+                "attendees": [
+                    {
+                        "id": "att1",
+                        "profile": {
+                            "first_name": "Ignore",
+                            "last_name": "Me",
+                            "email": "john@example.com"
+                        },
+                        "ticket_class_name": "Deelnemer",
+                        "answers": [
+                            {
+                                "question": "Voornaam (ouder/voogd)",
+                                "answer": "John"
+                            },
+                            {
+                                "question": "Achternaam (ouder/voogd)",
+                                "answer": "Doe"
+                            },
+                            {
+                                "question": "Mogen we jou via mail op de hoogte brengen over volgende CoderDojo-sessies?",
+                                "answer": "Je mag mij contacteren over toekomstige sessies."
+                            }
+                        ]
+                    },
+                    {
+                        "id": "att2",
+                        "profile": {
+                            "first_name": "Jane",
+                            "last_name": "Smith",
+                            "email": "jane@example.com"
+                        },
+                        "ticket_class_name": "Vrijwilliger",
+                        "answers": [
+                            {
+                                "question": "Voornaam (ouder/voogd)",
+                                "answer": "Jane"
+                            },
+                            {
+                                "question": "Achternaam (ouder/voogd)",
+                                "answer": "Smith"
+                            },
+                            {
+                                "question": "Wil je de nieuwsbrief?",
+                                "answer": "Nee"
+                            }
+                        ]
+                    }
+                ]
+            }
+            """;
+
+        server.expect(requestTo("https://www.eventbriteapi.com/v3/events/ev1/attendees/"))
+                .andRespond(withSuccess(responseJson, MediaType.APPLICATION_JSON));
+
+        java.util.List<Attendee> attendees = adapter.getAttendees("ev1");
+
+        assertThat(attendees).hasSize(2);
+
+        Attendee att1 = attendees.get(0);
+        assertThat(att1.getFirstName()).isEqualTo("John");
+        assertThat(att1.getLastName()).isEqualTo("Doe");
+        assertThat(att1.getEmail()).isEqualTo("john@example.com");
+        assertThat(att1.isOptIn()).isTrue();
+        assertThat(att1.getTicketType()).isEqualTo(TicketType.DEELNEMER);
+
+        Attendee att2 = attendees.get(1);
+        assertThat(att2.getFirstName()).isEqualTo("Jane");
+        assertThat(att2.getLastName()).isEqualTo("Smith");
+        assertThat(att2.getEmail()).isEqualTo("jane@example.com");
+        assertThat(att2.isOptIn()).isFalse();
+        assertThat(att2.getTicketType()).isEqualTo(TicketType.VRIJWILLIGER);
+    }
+
+    @Test
+    void getAttendees_shouldReturnUniqueAttendeesByEmail() {
+        String responseJson = """
+            {
+                "pagination": {
+                    "has_more_items": false,
+                    "continuation": null
+                },
+                "attendees": [
+                    {
+                        "id": "att1",
+                        "profile": {
+                            "first_name": "John",
+                            "last_name": "Doe",
+                            "email": "john@example.com"
+                        },
+                        "ticket_class_name": "Deelnemer",
+                        "answers": []
+                    },
+                    {
+                        "id": "att2",
+                        "profile": {
+                            "first_name": "John Duplicate",
+                            "last_name": "Doe",
+                            "email": "john@example.com"
+                        },
+                        "ticket_class_name": "Vrijwilliger",
+                        "answers": []
+                    },
+                    {
+                        "id": "att3",
+                        "profile": {
+                            "first_name": "Jane",
+                            "last_name": "Smith",
+                            "email": "jane@example.com"
+                        },
+                        "ticket_class_name": "Deelnemer",
+                        "answers": []
+                    }
+                ]
+            }
+            """;
+
+        server.expect(requestTo("https://www.eventbriteapi.com/v3/events/ev1/attendees/"))
+                .andRespond(withSuccess(responseJson, MediaType.APPLICATION_JSON));
+
+        java.util.List<Attendee> attendees = adapter.getAttendees("ev1");
+
+        assertThat(attendees).hasSize(2);
+        assertThat(attendees.get(0).getEmail()).isEqualTo("john@example.com");
+        assertThat(attendees.get(0).getId()).isEqualTo("att1"); // Should keep the first one
+        assertThat(attendees.get(1).getEmail()).isEqualTo("jane@example.com");
     }
 }

@@ -1,5 +1,6 @@
 package be.coderdojo.ninove.coderdojo.application.port.out;
 
+import be.coderdojo.ninove.coderdojo.domain.model.Attendee;
 import be.coderdojo.ninove.coderdojo.domain.model.Event;
 import be.coderdojo.ninove.coderdojo.domain.model.TicketClass;
 import java.time.ZonedDateTime;
@@ -13,4 +14,5 @@ public interface EventbritePort {
     Event updateEvent(String eventId, String newTitle, ZonedDateTime newStartTime, ZonedDateTime newEndTime);
     List<TicketClass> getTicketClasses(String eventId);
     TicketClass updateTicketClass(String eventId, String ticketClassId, int capacity, int quantityTotal);
+    List<Attendee> getAttendees(String eventId);
 }

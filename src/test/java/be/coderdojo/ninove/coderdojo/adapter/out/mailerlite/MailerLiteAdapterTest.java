@@ -1,6 +1,8 @@
 package be.coderdojo.ninove.coderdojo.adapter.out.mailerlite;
 
+import be.coderdojo.ninove.coderdojo.domain.model.Attendee;
 import be.coderdojo.ninove.coderdojo.domain.model.Campaign;
+import be.coderdojo.ninove.coderdojo.domain.model.TicketType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
@@ -183,5 +185,79 @@ class MailerLiteAdapterTest {
         assertThat(result.getSettings()).containsEntry("track_opens", "enabled");
         // server.verify() is implicitly checked if we use MockRestServiceServer with expect()
         // but here we just ensure it returns the debug object without calling the API.
+    }
+
+    @Test
+    void findSubscriberByEmail_shouldReturnAttendee() {
+        String responseJson = """
+            {
+                "data": {
+                    "id": "sub1",
+                    "email": "john@example.com",
+                    "status": "active",
+                    "fields": {
+                        "name": "John",
+                        "last_name": "Doe",
+                        "ticket_class": "Deelnemer"
+                    }
+                }
+            }
+            """;
+
+        server.expect(requestTo("https://connect.mailerlite.com/api/subscribers/john%40example.com"))
+                .andRespond(withSuccess(responseJson, MediaType.APPLICATION_JSON));
+
+        Optional<Attendee> result = adapter.findSubscriberByEmail("john@example.com");
+
+        assertThat(result).isPresent();
+        assertThat(result.get().getEmail()).isEqualTo("john@example.com");
+        assertThat(result.get().getFirstName()).isEqualTo("John");
+        assertThat(result.get().getTicketType()).isEqualTo(TicketType.DEELNEMER);
+        assertThat(result.get().isOptIn()).isTrue();
+    }
+
+    @Test
+    void createSubscriber_shouldPostAndReturnAttendee() {
+        String responseJson = """
+            {
+                "data": {
+                    "id": "sub2",
+                    "email": "new@example.com",
+                    "status": "active",
+                    "fields": {
+                        "name": "New",
+                        "last_name": "User",
+                        "ticket_class": "Deelnemer"
+                    }
+                }
+            }
+            """;
+
+        server.expect(requestTo("https://connect.mailerlite.com/api/subscribers"))
+                .andExpect(jsonPath("$.email").value("new@example.com"))
+                .andExpect(jsonPath("$.fields.ticket_class").value("Deelnemer"))
+                .andRespond(withSuccess(responseJson, MediaType.APPLICATION_JSON));
+
+        Attendee attendee = Attendee.builder()
+                .email("new@example.com")
+                .firstName("New")
+                .lastName("User")
+                .ticketType(TicketType.DEELNEMER)
+                .build();
+
+        Attendee result = adapter.createSubscriber(attendee, false);
+
+        assertThat(result.getId()).isEqualTo("sub2");
+        assertThat(result.getEmail()).isEqualTo("new@example.com");
+        assertThat(result.getTicketType()).isEqualTo(TicketType.DEELNEMER);
+    }
+
+    @Test
+    void optOutSubscriber_shouldPutUnsubscribed() {
+        server.expect(requestTo("https://connect.mailerlite.com/api/subscribers/john%40example.com"))
+                .andExpect(jsonPath("$.status").value("unsubscribed"))
+                .andRespond(withSuccess());
+
+        adapter.optOutSubscriber("john@example.com", false);
     }
 }

@@ -1,7 +1,9 @@
 package be.coderdojo.ninove.coderdojo.adapter.out.mailerlite;
 
 import be.coderdojo.ninove.coderdojo.application.port.out.MailerLitePort;
+import be.coderdojo.ninove.coderdojo.domain.model.Attendee;
 import be.coderdojo.ninove.coderdojo.domain.model.Campaign;
+import be.coderdojo.ninove.coderdojo.domain.model.TicketType;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -136,6 +138,120 @@ public class MailerLiteAdapter implements MailerLitePort {
           });
       return mapToCampaign((Map<String, Object>) response.get("data"));
     }
+  }
+
+  @Override
+  @SuppressWarnings("unchecked")
+  public Optional<Attendee> findSubscriberByEmail(String email) {
+    log.debug("Searching for subscriber with email: {}", email);
+    try {
+      Map<String, Object> response = mailerLiteRestClient.get()
+          .uri("/subscribers/{email}", email)
+          .retrieve()
+          .body(new ParameterizedTypeReference<>() {
+          });
+
+      if (response == null || !response.containsKey("data")) {
+        return Optional.empty();
+      }
+
+      return Optional.of(mapToAttendee((Map<String, Object>) response.get("data")));
+    } catch (org.springframework.web.client.HttpClientErrorException.NotFound e) {
+      return Optional.empty();
+    }
+  }
+
+  @Override
+  @SuppressWarnings("unchecked")
+  public Attendee createSubscriber(Attendee attendee, boolean debug) {
+    log.debug("Creating new subscriber with email: {}, debug: {}", attendee.getEmail(), debug);
+    Map<String, Object> fieldsMap = new java.util.HashMap<>(Map.of(
+        "name", attendee.getFirstName(),
+        "last_name", attendee.getLastName()
+    ));
+    if (attendee.getTicketType() != null) {
+      fieldsMap.put("ticket_class", attendee.getTicketType().getDescription());
+    }
+
+    Map<String, Object> request = Map.of(
+        "email", attendee.getEmail(),
+        "fields", fieldsMap
+    );
+
+    if (debug) {
+      log.info("DEBUG MODE: POST to /subscribers skipped for email: {}", attendee.getEmail());
+      return attendee;
+    } else {
+      Map<String, Object> response = mailerLiteRestClient.post()
+          .uri("/subscribers")
+          .body(request)
+          .retrieve()
+          .body(new ParameterizedTypeReference<>() {
+          });
+      return mapToAttendee((Map<String, Object>) response.get("data"));
+    }
+  }
+
+  @Override
+  @SuppressWarnings("unchecked")
+  public Attendee updateSubscriber(Attendee attendee, boolean debug) {
+    log.debug("Updating subscriber with email: {}, debug: {}", attendee.getEmail(), debug);
+    Map<String, Object> fieldsMap = new java.util.HashMap<>(Map.of(
+        "name", attendee.getFirstName(),
+        "last_name", attendee.getLastName()
+    ));
+    if (attendee.getTicketType() != null) {
+      fieldsMap.put("ticket_type", attendee.getTicketType().getDescription());
+    }
+
+    Map<String, Object> request = Map.of(
+        "fields", fieldsMap
+    );
+
+    if (debug) {
+      log.info("DEBUG MODE: PUT to /subscribers skipped for email: {}", attendee.getEmail());
+      return attendee;
+    } else {
+      Map<String, Object> response = mailerLiteRestClient.put()
+          .uri("/subscribers/{email}", attendee.getEmail())
+          .body(request)
+          .retrieve()
+          .body(new ParameterizedTypeReference<>() {
+          });
+      return mapToAttendee((Map<String, Object>) response.get("data"));
+    }
+  }
+
+  @Override
+  public void optOutSubscriber(String email, boolean debug) {
+    log.debug("Opting out subscriber with email: {}, debug: {}", email, debug);
+    Map<String, Object> request = Map.of(
+        "status", "unsubscribed"
+    );
+
+    if (debug) {
+      log.info("DEBUG MODE: PUT to /subscribers (unsubscribe) skipped for email: {}", email);
+    } else {
+      mailerLiteRestClient.put()
+          .uri("/subscribers/{email}", email)
+          .body(request)
+          .retrieve()
+          .toBodilessEntity();
+    }
+  }
+
+  @SuppressWarnings("unchecked")
+  private Attendee mapToAttendee(Map<String, Object> data) {
+    Map<String, Object> fields = (Map<String, Object>) data.get("fields");
+    String status = (String) data.get("status");
+    return Attendee.builder()
+        .id((String) data.get("id"))
+        .email((String) data.get("email"))
+        .firstName((String) fields.get("name"))
+        .lastName((String) fields.get("last_name"))
+        .ticketType(TicketType.fromDescription((String) fields.get("ticket_class")))
+        .optIn(!"unsubscribed".equalsIgnoreCase(status))
+        .build();
   }
 
   @SuppressWarnings("unchecked")
