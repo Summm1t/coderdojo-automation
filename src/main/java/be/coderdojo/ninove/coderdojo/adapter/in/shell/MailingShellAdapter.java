@@ -1,5 +1,7 @@
 package be.coderdojo.ninove.coderdojo.adapter.in.shell;
 
+import static be.coderdojo.ninove.coderdojo.domain.model.Constants.LATEST;
+
 import be.coderdojo.ninove.coderdojo.application.port.in.CopyMailingUseCase;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -14,14 +16,14 @@ public class MailingShellAdapter {
 
     private final CopyMailingUseCase copyMailingUseCase;
 
-    @ShellMethod(key = "copy-mailing", value = "Copy the latest mailing campaign and update its content.")
+    @ShellMethod(key = "copy-mailing", value = "Copy an existing campaign and update its content.")
     public String copyMailing(
-            @ShellOption(value = "title", help = "Title of the newsletter") String title,
-            @ShellOption(value = "date", help = "New event date (e.g. 21 maart)") String date,
-            @ShellOption(value = "link", help = "Eventbrite link") String link,
+            @ShellOption(value = {"original-campaign-title"}, defaultValue = LATEST, help = "Title of the existing campaign to copy, or 'latest'") String originalCampaignTitle,
+            @ShellOption(value = "date", help = "Date of the new campaign (dd/MM/yyyy)") String date,
+            @ShellOption(value = "link", help = "Eventbrite registration link for the new campaign") String link,
             @ShellOption(value = "debug", defaultValue = "false", help = "Show details without modifying MailerLite") boolean debug
     ) {
-        log.debug("Received request to copy mailing: title={}, date={}, link={}, debug={}", title, date, link, debug);
-        return copyMailingUseCase.copyMailing(title, date, link, debug);
+        log.debug("Received request to copy mailing: originalCampaignTitle={}, date={}, link={}, debug={}", originalCampaignTitle, date, link, debug);
+        return copyMailingUseCase.copyMailing(originalCampaignTitle, date, link, debug);
     }
 }

@@ -5,6 +5,7 @@ import java.util.Optional;
 
 public interface MailerLitePort {
     Optional<Campaign> findLatestCampaign();
+    Optional<Campaign> findCampaignByTitle(String title);
     Optional<Campaign> getCampaignDetails(String campaignId);
     Campaign createCampaign(String title, String content, boolean debug);
 }

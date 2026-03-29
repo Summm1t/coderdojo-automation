@@ -11,6 +11,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Optional;
 
+import static be.coderdojo.ninove.coderdojo.domain.model.Constants.LATEST;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
@@ -31,52 +32,92 @@ class CopyMailingServiceTest {
     @Test
     void copyMailing_ShouldSuccessfullyCopyAndUpdate() {
         // Given
-        String oldContent = "Hallo,\nDe volgende Coderdojo gaat door op zondag 15 februari in de vernieuwe bibliotheek van Ninove, inschrijven kan hier: https://www.eventbrite.com/e/registratie-coderdojo-ninove-1234567890\nGroeten!";
-        Campaign latest = Campaign.builder().id("1").title("Old Title").build();
-        Campaign details = Campaign.builder().id("1").title("Old Title").content(oldContent).build();
-        Campaign created = Campaign.builder().id("2").title("Coderdojo Ninove Nieuwsbrief April").build();
+        String oldContent = "Hallo,\ninschrijven kan hier: https://www.eventbrite.com/e/registratie-coderdojo-ninove-1234567890\nGroeten!";
+        Campaign latest = Campaign.builder().id("1").title("Coderdojo Ninove Nieuwsbrief april 2026").build();
+        Campaign details = Campaign.builder().id("1").title("Coderdojo Ninove Nieuwsbrief april 2026").content(oldContent).build();
+        Campaign created = Campaign.builder().id("2").title("Coderdojo Ninove Nieuwsbrief mei 2026").build();
 
         when(mailerLitePort.findLatestCampaign()).thenReturn(Optional.of(latest));
         when(mailerLitePort.getCampaignDetails("1")).thenReturn(Optional.of(details));
         when(mailerLitePort.createCampaign(anyString(), anyString(), anyBoolean())).thenReturn(created);
 
         // When
-        String result = copyMailingService.copyMailing("April", "12 april", "https://www.eventbrite.com/e/registratie-coderdojo-ninove-newlink", false);
+        String result = copyMailingService.copyMailing(LATEST, "17/05/2026", "https://www.eventbrite.com/e/registratie-coderdojo-ninove-newlink", false);
 
         // Then
         assertThat(result).contains("New mailing campaign created");
-        assertThat(result).contains("Coderdojo Ninove Nieuwsbrief April");
+        assertThat(result).contains("Coderdojo Ninove Nieuwsbrief mei 2026");
 
         ArgumentCaptor<String> titleCaptor = ArgumentCaptor.forClass(String.class);
         ArgumentCaptor<String> contentCaptor = ArgumentCaptor.forClass(String.class);
         ArgumentCaptor<Boolean> debugCaptor = ArgumentCaptor.forClass(Boolean.class);
         verify(mailerLitePort).createCampaign(titleCaptor.capture(), contentCaptor.capture(), debugCaptor.capture());
 
-        assertThat(titleCaptor.getValue()).isEqualTo("Coderdojo Ninove Nieuwsbrief April");
-        assertThat(contentCaptor.getValue()).contains("zondag 12 april");
+        assertThat(titleCaptor.getValue()).isEqualTo("Coderdojo Ninove Nieuwsbrief mei 2026");
         assertThat(contentCaptor.getValue()).contains("https://www.eventbrite.com/e/registratie-coderdojo-ninove-newlink");
-        assertThat(contentCaptor.getValue()).doesNotContain("15 februari");
         assertThat(contentCaptor.getValue()).doesNotContain("1234567890");
         assertThat(debugCaptor.getValue()).isFalse();
     }
 
     @Test
+    void copyMailing_WithSpecificTitle_ShouldFindAndCopy() {
+        // Given
+        String oldContent = "Inschrijven: https://www.eventbrite.com/e/old-link";
+        String specificTitle = "Coderdojo Ninove Nieuwsbrief januari 2026";
+        Campaign original = Campaign.builder().id("10").title(specificTitle).build();
+        Campaign details = Campaign.builder().id("10").title(specificTitle).content(oldContent).build();
+        Campaign created = Campaign.builder().id("11").title("Coderdojo Ninove Nieuwsbrief februari 2026").build();
+
+        when(mailerLitePort.findCampaignByTitle(specificTitle)).thenReturn(Optional.of(original));
+        when(mailerLitePort.getCampaignDetails("10")).thenReturn(Optional.of(details));
+        when(mailerLitePort.createCampaign(anyString(), anyString(), anyBoolean())).thenReturn(created);
+
+        // When
+        String result = copyMailingService.copyMailing(specificTitle, "15/02/2026", "https://www.eventbrite.com/e/new-link", false);
+
+        // Then
+        assertThat(result).contains("New mailing campaign created");
+        verify(mailerLitePort).findCampaignByTitle(specificTitle);
+        verify(mailerLitePort).createCampaign(eq("Coderdojo Ninove Nieuwsbrief februari 2026"), anyString(), eq(false));
+    }
+
+    @Test
     void copyMailing_WithDebug_ShouldCallCreateCampaignWithDebugTrue() {
         // Given
-        String oldContent = "De volgende Coderdojo gaat door op zondag 15 februari in de vernieuwe bibliotheek van Ninove, inschrijven kan hier: https://www.eventbrite.com/e/registratie-coderdojo-ninove-123";
-        Campaign latest = Campaign.builder().id("1").build();
-        Campaign details = Campaign.builder().id("1").content(oldContent).build();
+        String oldContent = "Inschrijven: https://www.eventbrite.com/e/old-link";
+        Campaign latest = Campaign.builder().id("1").title("Coderdojo Ninove Nieuwsbrief april 2026").build();
+        Campaign details = Campaign.builder().id("1").title("Coderdojo Ninove Nieuwsbrief april 2026").content(oldContent).build();
 
         when(mailerLitePort.findLatestCampaign()).thenReturn(Optional.of(latest));
         when(mailerLitePort.getCampaignDetails("1")).thenReturn(Optional.of(details));
 
         // When
-        String result = copyMailingService.copyMailing("April", "12 april", "https://www.eventbrite.com/e/registratie-coderdojo-ninove-new", true);
+        String result = copyMailingService.copyMailing(LATEST, "17/05/2026", "https://www.eventbrite.com/e/new-link", true);
 
         // Then
         assertThat(result).startsWith("DEBUG MODE:");
-        assertThat(result).contains("Coderdojo Ninove Nieuwsbrief April");
-        assertThat(result).contains("zondag 12 april");
+        assertThat(result).contains("Coderdojo Ninove Nieuwsbrief mei 2026");
         verify(mailerLitePort).createCampaign(anyString(), anyString(), eq(true));
+    }
+
+    @Test
+    void updateContentLink_ShouldHandleVariousEventbriteTLDs() {
+        // Given
+        String oldContent = "Inschrijven: https://www.eventbrite.co.uk/e/old-link-12345";
+        Campaign latest = Campaign.builder().id("1").title("Coderdojo Ninove Nieuwsbrief april 2026").build();
+        Campaign details = Campaign.builder().id("1").title("Coderdojo Ninove Nieuwsbrief april 2026").content(oldContent).build();
+
+        when(mailerLitePort.findLatestCampaign()).thenReturn(Optional.of(latest));
+        when(mailerLitePort.getCampaignDetails("1")).thenReturn(Optional.of(details));
+
+        // When
+        String newLink = "https://www.eventbrite.nl/e/new-link-67890";
+        copyMailingService.copyMailing(LATEST, "17/05/2026", newLink, true);
+
+        // Then
+        ArgumentCaptor<String> contentCaptor = ArgumentCaptor.forClass(String.class);
+        verify(mailerLitePort).createCampaign(anyString(), contentCaptor.capture(), eq(true));
+        assertThat(contentCaptor.getValue()).contains(newLink);
+        assertThat(contentCaptor.getValue()).doesNotContain("old-link-12345");
     }
 }

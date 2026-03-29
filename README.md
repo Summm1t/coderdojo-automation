@@ -134,20 +134,21 @@ Sets the capacity and quantity_total for each ticket class for a specific event.
 * `--debug`: (Optional, default: `false`) If set to `true`, the application will show the details of
   the updates it would make without actually making any changes on Eventbrite.
 
-### `copy-mailing`
+### `campaign`
 
-Copies the latest mailing campaign in MailerLite, updates its title, replaces specific date-related
-text in the content, and updates the Eventbrite registration link.
+Copies an existing mailing campaign in MailerLite and updates its title, registration link, and
+content based on a new date.
 
 **Usage:**
-`copy-mailing --title <title> --date <date> --link <eventbrite-link> [--debug <true|false>]`
+`copy-mailing [--original-campaign-title <title|latest>] --date <date> --link <eventbrite-link> [--debug <true|false>]`
 
 **Parameters:**
 
-* `--title`: The title suffix for the new campaign (e.g., "April 2026"). The full title will be
-  "Coderdojo Ninove Nieuwsbrief " + `<title>`.
-* `--date`: The date string to be placed in the campaign content (e.g., "21 april").
-* `--link`: The new Eventbrite registration link.
+* `--original-campaign-title`: (Optional, default: `latest`) Title of the existing campaign to copy,
+  or the string `latest` to pick the most recent sent campaign.
+* `--date`: The date of the new campaign (format: `dd/MM/yyyy`). This date is used to update the
+  campaign title (e.g., replacing "april 2026" with "mei 2026") and is formatted in Dutch.
+* `--link`: The new Eventbrite registration link (format: `https://www.eventbrite.com/e/...`).
 * `--debug`: (Optional, default: `false`) If set to `true`, the application will show the details of
   the campaign it would create without actually making any changes in MailerLite.
 

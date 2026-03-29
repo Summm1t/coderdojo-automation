@@ -41,7 +41,7 @@ class MailerLiteAdapterTest {
             }
             """;
 
-        server.expect(requestTo("https://connect.mailerlite.com/api/campaigns?limit=1"))
+        server.expect(requestTo("https://connect.mailerlite.com/api/campaigns?limit=1&status=sent"))
                 .andRespond(withSuccess(responseJson, MediaType.APPLICATION_JSON));
 
         Optional<Campaign> result = adapter.findLatestCampaign();
@@ -49,6 +49,31 @@ class MailerLiteAdapterTest {
         assertThat(result).isPresent();
         assertThat(result.get().getId()).isEqualTo("101");
         assertThat(result.get().getTitle()).isEqualTo("Latest Campaign");
+    }
+
+    @Test
+    void findCampaignByTitle_shouldReturnCampaign() {
+        String title = "Specific Campaign";
+        String responseJson = """
+            {
+                "data": [
+                    {
+                        "id": "105",
+                        "name": "Specific Campaign",
+                        "status": "sent"
+                    }
+                ]
+            }
+            """;
+
+        server.expect(requestTo("https://connect.mailerlite.com/api/campaigns?filter%5Bkeyword%5D=Specific%20Campaign&limit=1"))
+                .andRespond(withSuccess(responseJson, MediaType.APPLICATION_JSON));
+
+        Optional<Campaign> result = adapter.findCampaignByTitle(title);
+
+        assertThat(result).isPresent();
+        assertThat(result.get().getId()).isEqualTo("105");
+        assertThat(result.get().getTitle()).isEqualTo("Specific Campaign");
     }
 
     @Test

@@ -1,5 +1,7 @@
 package be.coderdojo.ninove.coderdojo.application.service;
 
+import static be.coderdojo.ninove.coderdojo.domain.model.Constants.LATEST;
+
 import be.coderdojo.ninove.coderdojo.application.port.in.CopyEventUseCase;
 import be.coderdojo.ninove.coderdojo.application.port.out.EventbritePort;
 import be.coderdojo.ninove.coderdojo.domain.model.Event;
@@ -28,7 +30,7 @@ public class CopyEventService implements CopyEventUseCase {
         log.debug("Processing copy event for sourceEventDate: {}, newDate: {}, place: {}, debug: {}",
                 sourceEventDate, newDate, place, debug);
         Optional<Event> sourceEventOpt;
-        if ("latest".equalsIgnoreCase(sourceEventDate)) {
+        if (LATEST.equalsIgnoreCase(sourceEventDate)) {
             sourceEventOpt = eventbritePort.findLatestPastEvent();
         } else {
             // Convert sourceEventDate from dd/MM/yyyy to yyyy-MM-dd if needed, or update port to handle it

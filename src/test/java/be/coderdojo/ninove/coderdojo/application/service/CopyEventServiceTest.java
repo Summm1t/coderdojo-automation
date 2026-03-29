@@ -12,6 +12,7 @@ import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.Optional;
 
+import static be.coderdojo.ninove.coderdojo.domain.model.Constants.LATEST;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -34,7 +35,7 @@ class CopyEventServiceTest {
     @Test
     void copyEvent_withLatest_shouldCallFindLatestPastEvent() {
         // Given
-        String sourceDate = "latest";
+        String sourceDate = LATEST;
         LocalDate newDate = LocalDate.of(2026, 3, 13);
         String place = "Special Edition";
         String expectedTitle = "CoderDojo Ninove - 13/03/2026 - Special Edition";
@@ -104,7 +105,7 @@ class CopyEventServiceTest {
     @Test
     void copyEvent_debugMode_shouldNotCallCopyEvent() {
         // Given
-        String sourceDate = "latest";
+        String sourceDate = LATEST;
         LocalDate newDate = LocalDate.of(2026, 3, 13);
         String place = "Debug Suffix";
         ZonedDateTime sourceStartTime = ZonedDateTime.parse("2023-01-01T10:00:00Z");
@@ -134,8 +135,8 @@ class CopyEventServiceTest {
         when(eventbritePort.findLatestPastEvent()).thenReturn(Optional.empty());
 
         // When & Then
-        assertThrows(IllegalArgumentException.class, () -> 
-            copyEventService.copyEvent("latest", LocalDate.now(), null, false)
+        assertThrows(IllegalArgumentException.class, () ->
+            copyEventService.copyEvent(LATEST, LocalDate.now(), null, false)
         );
     }
 }

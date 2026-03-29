@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import static be.coderdojo.ninove.coderdojo.domain.model.Constants.LATEST;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
@@ -80,7 +81,7 @@ class UpdateTicketClassesServiceTest {
     @Test
     void setParticipants_debugMode_shouldNotCallUpdatePort() {
         // Given
-        String eventDate = "latest";
+        String eventDate = LATEST;
         Map<String, Integer> capacities = Map.of("deelnemers", 20);
         Event event = Event.builder().id("event123").name("CoderDojo").build();
         List<TicketClass> ticketClasses = List.of(TicketClass.builder().id("tc1").name("Deelnemer").build());

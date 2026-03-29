@@ -1,5 +1,7 @@
 package be.coderdojo.ninove.coderdojo.adapter.in.shell;
 
+import static be.coderdojo.ninove.coderdojo.domain.model.Constants.LATEST;
+
 import be.coderdojo.ninove.coderdojo.application.port.in.CopyEventUseCase;
 import be.coderdojo.ninove.coderdojo.application.port.in.UpdateTicketClassesUseCase;
 import be.coderdojo.ninove.coderdojo.domain.model.TicketClass;
@@ -44,7 +46,7 @@ public class EventShellAdapter {
 
     @ShellMethod(key = "set-participants", value = "Set capacity and quantity_total for each ticket class.")
     public String setParticipants(
-            @ShellOption(value = "event", defaultValue = "latest", help = "Date of the event (dd/MM/yyyy) or 'latest'") String eventDate,
+            @ShellOption(value = "event", defaultValue = LATEST, help = "Date of the event (dd/MM/yyyy) or 'latest'") String eventDate,
             @ShellOption(value = "deelnemers", defaultValue = "20", help = "Capacity for 'Deelnemers'") int deelnemers,
             @ShellOption(value = "vrijwilligers", defaultValue = "15", help = "Capacity for 'Vrijwilligers'") int vrijwilligers,
             @ShellOption(value = "kind-van-vrijwilliger", defaultValue = "10", help = "Capacity for 'Kind van Vrijwilliger'") int kindVanVrijwilliger,
@@ -62,7 +64,7 @@ public class EventShellAdapter {
         );
 
         String dateToUse = eventDate;
-        if (!"latest".equalsIgnoreCase(eventDate)) {
+        if (!LATEST.equalsIgnoreCase(eventDate)) {
             DateTimeFormatter inputFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
             DateTimeFormatter outputFormatter = DateTimeFormatter.ISO_LOCAL_DATE;
             try {

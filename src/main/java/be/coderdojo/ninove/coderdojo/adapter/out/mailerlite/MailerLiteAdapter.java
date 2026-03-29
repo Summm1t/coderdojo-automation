@@ -23,7 +23,7 @@ public class MailerLiteAdapter implements MailerLitePort {
   public Optional<Campaign> findLatestCampaign() {
     log.debug("Fetching latest campaigns from MailerLite");
     Map<String, Object> response = mailerLiteRestClient.get()
-        .uri("/campaigns?limit=1")
+        .uri("/campaigns?limit=1&status=sent")
         .retrieve()
         .body(new ParameterizedTypeReference<>() {
         });
@@ -38,6 +38,30 @@ public class MailerLiteAdapter implements MailerLitePort {
     }
 
     return Optional.of(mapToCampaign(data.get(0)));
+  }
+
+  @Override
+  @SuppressWarnings("unchecked")
+  public Optional<Campaign> findCampaignByTitle(String title) {
+    log.debug("Searching for campaign with title: {}", title);
+    // Note: MailerLite API filter for name is not allowed, so we need to search by title
+    throw new UnsupportedOperationException("Searching for campaign by title is not yet implemented.");
+//    Map<String, Object> response = mailerLiteRestClient.get()
+//        .uri("/campaigns?limit=1", title)
+//        .retrieve()
+//        .body(new ParameterizedTypeReference<>() {
+//        });
+//
+//    if (response == null || !response.containsKey("data")) {
+//      return Optional.empty();
+//    }
+//
+//    List<Map<String, Object>> data = (List<Map<String, Object>>) response.get("data");
+//    if (data == null || data.isEmpty()) {
+//      return Optional.empty();
+//    }
+//
+//    return Optional.of(mapToCampaign(data.get(0)));
   }
 
   @Override

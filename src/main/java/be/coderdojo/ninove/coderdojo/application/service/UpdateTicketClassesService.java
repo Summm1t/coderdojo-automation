@@ -1,5 +1,7 @@
 package be.coderdojo.ninove.coderdojo.application.service;
 
+import static be.coderdojo.ninove.coderdojo.domain.model.Constants.LATEST;
+
 import be.coderdojo.ninove.coderdojo.application.port.in.UpdateTicketClassesUseCase;
 import be.coderdojo.ninove.coderdojo.application.port.out.EventbritePort;
 import be.coderdojo.ninove.coderdojo.domain.model.Event;
@@ -29,7 +31,7 @@ public class UpdateTicketClassesService implements UpdateTicketClassesUseCase {
         log.info("Setting participants for event on date {} with capacities {}. Debug: {}", eventDate, capacities, debug);
 
         Optional<Event> eventOptional;
-        if ("latest".equalsIgnoreCase(eventDate)) {
+        if (LATEST.equalsIgnoreCase(eventDate)) {
             eventOptional = eventbritePort.findLatestPastEvent();
         } else {
             eventOptional = eventbritePort.findEventByDate(eventDate);
