@@ -11,7 +11,7 @@
   </parent>
   <groupId>be.coderdojo.ninove</groupId>
   <artifactId>coderdojo</artifactId>
-  <version>0.3.0</version>
+  <version>0.4.0-SNAPSHOT</version>
   <name>coderdojo</name>
   <description>coderdojo</description>
   <url/>
