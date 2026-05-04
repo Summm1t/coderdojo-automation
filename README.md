@@ -62,14 +62,14 @@ The image is published to GHCR for every release. Replace `<version>` with the d
 e.g., `1.0.0`).
 
 ```bash
-docker run -it --env-file .env ghcr.io/summm1t/cdj-workflow-automation:<version> \
+docker run -it --env-file .env ghcr.io/summm1t/coderdojo-automation:<version> \
   copy-event --source-event 'latest' --date '01/06/2026'
 ```
 
 Alternatively, use the `latest` tag for the most recent version:
 
 ```bash
-docker run -it --env-file .env ghcr.io/summm1t/cdj-workflow-automation:latest \
+docker run -it --env-file .env ghcr.io/summm1t/coderdojo-automation:latest \
   copy-event --source-event 'latest' --date '01/06/2026'
 ```
 
@@ -208,5 +208,5 @@ The release process is automated and follows these steps:
 
 ### Docker Image
 
-The Docker image is available at `ghcr.io/summm1t/cdj-workflow-automation`.
+The Docker image is available at `ghcr.io/summm1t/coderdojo-automation`.
 It uses `eclipse-temurin:21-jre` as the runtime base.
