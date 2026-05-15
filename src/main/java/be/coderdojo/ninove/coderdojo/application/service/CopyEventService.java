@@ -1,5 +1,6 @@
 package be.coderdojo.ninove.coderdojo.application.service;
 
+import static be.coderdojo.ninove.coderdojo.adapter.in.shell.EventShellAdapter.INPUT_DATE_FORMATTER;
 import static be.coderdojo.ninove.coderdojo.domain.model.Constants.BRUSSELS_ZONE;
 import static be.coderdojo.ninove.coderdojo.domain.model.Constants.INPUT_DATE_FORMAT;
 import static be.coderdojo.ninove.coderdojo.domain.model.Constants.LATEST;
@@ -27,22 +28,20 @@ public class CopyEventService implements CopyEventUseCase {
     private final EventbritePort eventbritePort;
 
     @Override
-    public String copyEvent(String sourceEventDate, LocalDate newDate, String place, boolean debug) {
+    public String copyEvent(String sourceEventDate, String newDate, String place, boolean debug) {
         log.debug("Processing copy event for sourceEventDate: {}, newDate: {}, place: {}, debug: {}",
                 sourceEventDate, newDate, place, debug);
+        LocalDate newDateLocalDate;
+        try {
+            newDateLocalDate = LocalDate.parse(newDate, INPUT_DATE_FORMATTER);
+        } catch (java.time.format.DateTimeParseException e) {
+            return "Invalid newDate format. Please use '" + INPUT_DATE_FORMAT + "' (e.m. 21/03/2026).";
+        }
         Optional<Event> sourceEventOpt;
         if (LATEST.equalsIgnoreCase(sourceEventDate)) {
             sourceEventOpt = eventbritePort.findLatestPastEvent();
         } else {
-            // Convert sourceEventDate from dd/MM/yyyy to yyyy-MM-dd if needed, or update port to handle it
-            String formattedDate = sourceEventDate;
-            try {
-                LocalDate date = LocalDate.parse(sourceEventDate, DateTimeFormatter.ofPattern(INPUT_DATE_FORMAT));
-                formattedDate = date.format(DateTimeFormatter.ISO_LOCAL_DATE);
-            } catch (Exception e) {
-                // assume it's already in yyyy-MM-dd or let the port handle it
-            }
-            sourceEventOpt = eventbritePort.findEventByDate(formattedDate);
+            sourceEventOpt = eventbritePort.findEventByDate(sourceEventDate);
         }
 
         if (sourceEventOpt.isEmpty()) {
@@ -56,11 +55,11 @@ public class CopyEventService implements CopyEventUseCase {
         LocalTime startTime = LocalTime.of(9, 15);
         LocalTime endTime = LocalTime.of(12, 30);
 
-        ZonedDateTime newStartTime = LocalDateTime.of(newDate, startTime).atZone(BRUSSELS_ZONE);
-        ZonedDateTime newEndTime = LocalDateTime.of(newDate, endTime).atZone(BRUSSELS_ZONE);
+        ZonedDateTime newStartTime = LocalDateTime.of(newDateLocalDate, startTime).atZone(BRUSSELS_ZONE);
+        ZonedDateTime newEndTime = LocalDateTime.of(newDateLocalDate, endTime).atZone(BRUSSELS_ZONE);
 
         String suffix = (place == null || place.isBlank()) ? "bibliotheek Ninove" : place;
-        String formattedNewDate = newDate.format(DateTimeFormatter.ofPattern(INPUT_DATE_FORMAT));
+        String formattedNewDate = newDateLocalDate.format(DateTimeFormatter.ofPattern(INPUT_DATE_FORMAT));
         String newTitle = String.format("CoderDojo Ninove - %s - %s", formattedNewDate, suffix);
         log.debug("New event title: {}", newTitle);
 

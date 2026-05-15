@@ -91,7 +91,8 @@ public class MailerLiteAdapter implements MailerLitePort {
 
     Map<String, Object> emailRequest = Map.of(
         "subject", subject != null ? subject : title,
-        "content", content,
+//        We cannot set the content, because we get the error "Content submission is only available on advanced plan"
+//        "content", content,
         "from_name", fromName,
         "from", fromEmail
     );

@@ -27,4 +27,5 @@
     <logger name="org.springframework" level="WARN"/>
     <!-- org.jline seems to bypass standard logging for some early warnings -->
     <logger name="org.jline" level="OFF"/>
+    <logger name="logging.level.org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration" level="ERROR"/>
 </configuration>

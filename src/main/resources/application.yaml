@@ -10,7 +10,12 @@ spring:
     interactive:
       enabled: true
 # logging configuration moved to logback-spring.xml
-
+logging:
+  level:
+    org:
+      springframework:
+        boot:
+          autoconfigure: ERROR
 eventbrite:
   api:
     token: ${EVENTBRITE_API_TOKEN:placeholder}

@@ -1,5 +1,7 @@
 package be.coderdojo.ninove.coderdojo.application.service;
 
+import static be.coderdojo.ninove.coderdojo.adapter.in.shell.EventShellAdapter.INPUT_DATE_FORMATTER;
+import static be.coderdojo.ninove.coderdojo.domain.model.Constants.INPUT_DATE_FORMAT;
 import static be.coderdojo.ninove.coderdojo.domain.model.Constants.LATEST;
 import static be.coderdojo.ninove.coderdojo.domain.model.TicketType.DEELNEMER;
 import static be.coderdojo.ninove.coderdojo.domain.model.TicketType.KIND_VAN_VRIJWILLIGER;
@@ -10,74 +12,97 @@ import be.coderdojo.ninove.coderdojo.application.port.in.UpdateTicketClassesUseC
 import be.coderdojo.ninove.coderdojo.application.port.out.EventbritePort;
 import be.coderdojo.ninove.coderdojo.domain.model.Event;
 import be.coderdojo.ninove.coderdojo.domain.model.TicketClass;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
-
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class UpdateTicketClassesService implements UpdateTicketClassesUseCase {
 
-    private final EventbritePort eventbritePort;
+  private final EventbritePort eventbritePort;
 
-    @Override
-    public List<TicketClass> setParticipants(String eventDate, Map<String, Integer> capacities, boolean debug) {
-        log.info("Setting participants for event on date {} with capacities {}. Debug: {}", eventDate, capacities, debug);
-
-        Optional<Event> eventOptional;
-        if (LATEST.equalsIgnoreCase(eventDate)) {
-            eventOptional = eventbritePort.findLatestPastEvent();
-        } else {
-            eventOptional = eventbritePort.findEventByDate(eventDate);
-        }
-
-        if (eventOptional.isEmpty()) {
-            throw new IllegalArgumentException("No event found for date: " + eventDate);
-        }
-
-        Event event = eventOptional.get();
-        log.info("Found event: {} (ID: {})", event.getName(), event.getId());
-
-        List<TicketClass> ticketClasses = eventbritePort.getTicketClasses(event.getId());
-        List<TicketClass> updatedTicketClasses = new ArrayList<>();
-
-        for (TicketClass ticketClass : ticketClasses) {
-            Integer newCapacity = null;
-
-            if (DEELNEMER.getDescription().equalsIgnoreCase(ticketClass.getName())) {
-                newCapacity = capacities.get("deelnemers");
-            } else if (VRIJWILLIGER.getDescription().equalsIgnoreCase(ticketClass.getName())) {
-                newCapacity = capacities.get("vrijwilligers");
-            } else if (KIND_VAN_VRIJWILLIGER.getDescription().equalsIgnoreCase(ticketClass.getName())) {
-                newCapacity = capacities.get("kind-van-vrijwilliger");
-            } else if (MET_UITNODIGING.getDescription().equalsIgnoreCase(ticketClass.getName())) {
-                newCapacity = capacities.get("met-uitnodiging");
-            }
-
-            if (newCapacity != null) {
-                log.info("Updating Ticket type '{}' (ID: {}) to capacity {}", ticketClass.getName(), ticketClass.getId(), newCapacity);
-                if (!debug) {
-                    updatedTicketClasses.add(eventbritePort.updateTicketClass(event.getId(), ticketClass.getId(), newCapacity, newCapacity));
-                } else {
-                    log.info("[DEBUG] Would update Ticket type '{}' to capacity {}", ticketClass.getName(), newCapacity);
-                    updatedTicketClasses.add(TicketClass.builder()
-                            .id(ticketClass.getId())
-                            .name(ticketClass.getName())
-                            .capacity(newCapacity)
-                            .quantityTotal(newCapacity)
-                            .build());
-                }
-            } else {
-                log.warn("Ticket type '{}' (ID: {}) did not match any criteria, skipping.", ticketClass.getName(), ticketClass.getId());
-            }
-        }
-
-        return updatedTicketClasses;
+  @Override
+  public List<TicketClass> setParticipants(String eventDate, int deelnemers, int vrijwilligers,
+      int kindVanVrijwilliger, int metUitnodiging, boolean debug) {
+    Map<String, Integer> capacities = Map.of(
+        "deelnemers", deelnemers,
+        "vrijwilligers", vrijwilligers,
+        "kind-van-vrijwilliger", kindVanVrijwilliger,
+        "met-uitnodiging", metUitnodiging
+    );
+    log.info("Setting participants for event on date {} with capacities {}. Debug: {}", eventDate,
+        capacities, debug);
+    String dateToUse = eventDate;
+    if (!LATEST.equalsIgnoreCase(eventDate)) {
+      DateTimeFormatter outputFormatter = DateTimeFormatter.ISO_LOCAL_DATE;
+      try {
+        dateToUse = LocalDate.parse(eventDate, INPUT_DATE_FORMATTER).format(outputFormatter);
+      } catch (Exception e) {
+        // do nothing
+      }
     }
+
+    Optional<Event> eventOptional;
+    if (LATEST.equalsIgnoreCase(eventDate)) {
+      eventOptional = eventbritePort.findLatestPastEvent();
+    } else {
+      eventOptional = eventbritePort.findEventByDate(eventDate);
+    }
+
+    if (eventOptional.isEmpty()) {
+      throw new IllegalArgumentException("No event found for date: " + eventDate);
+    }
+
+    Event event = eventOptional.get();
+    log.info("Found event: {} (ID: {})", event.getName(), event.getId());
+
+    List<TicketClass> ticketClasses = eventbritePort.getTicketClasses(event.getId());
+    List<TicketClass> updatedTicketClasses = new ArrayList<>();
+
+    for (TicketClass ticketClass : ticketClasses) {
+      Integer newCapacity = null;
+
+      if (DEELNEMER.getDescription().equalsIgnoreCase(ticketClass.getName())) {
+        newCapacity = capacities.get("deelnemers");
+      } else if (VRIJWILLIGER.getDescription().equalsIgnoreCase(ticketClass.getName())) {
+        newCapacity = capacities.get("vrijwilligers");
+      } else if (KIND_VAN_VRIJWILLIGER.getDescription().equalsIgnoreCase(ticketClass.getName())) {
+        newCapacity = capacities.get("kind-van-vrijwilliger");
+      } else if (MET_UITNODIGING.getDescription().equalsIgnoreCase(ticketClass.getName())) {
+        newCapacity = capacities.get("met-uitnodiging");
+      }
+
+      if (newCapacity != null) {
+        log.info("Updating Ticket type '{}' (ID: {}) to capacity {}", ticketClass.getName(),
+            ticketClass.getId(), newCapacity);
+        if (!debug) {
+          updatedTicketClasses.add(
+              eventbritePort.updateTicketClass(event.getId(), ticketClass.getId(), newCapacity,
+                  newCapacity));
+        } else {
+          log.info("[DEBUG] Would update Ticket type '{}' to capacity {}", ticketClass.getName(),
+              newCapacity);
+          updatedTicketClasses.add(TicketClass.builder()
+              .id(ticketClass.getId())
+              .name(ticketClass.getName())
+              .capacity(newCapacity)
+              .quantityTotal(newCapacity)
+              .build());
+        }
+      } else {
+        log.warn("Ticket type '{}' (ID: {}) did not match any criteria, skipping.",
+            ticketClass.getName(), ticketClass.getId());
+      }
+    }
+
+    return updatedTicketClasses;
+  }
 }

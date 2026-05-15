@@ -9,7 +9,6 @@ import be.coderdojo.ninove.coderdojo.domain.model.TicketClass;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,24 +26,19 @@ public class EventShellAdapter {
   private final CopyEventUseCase copyEventUseCase;
   private final UpdateTicketClassesUseCase updateTicketClassesUseCase;
 
-  @ShellMethod(key = "copy-event", value = "Copy an existing event to a new date.")
+  @ShellMethod(key = "copy-event", value = "Copy an existing event to a new newDate.")
   public String copyEvent(
       @ShellOption(value = "source-event", help = "Date of the event to copy (" + INPUT_DATE_FORMAT
           + ") or '" + LATEST + "'") String sourceEvent,
-      @ShellOption(value = "date", help = "New event date (" + INPUT_DATE_FORMAT + ")") String date,
+      @ShellOption(value = "newDate", help = "New event newDate (" + INPUT_DATE_FORMAT
+          + ")") String newDate,
       @ShellOption(value = "place", defaultValue = ShellOption.NULL, help = "Place for the new event") String place,
       @ShellOption(value = "debug", defaultValue = "false", help = "Show details without modifying Eventbrite") boolean debug
   ) {
-    log.debug("Received request to copy event: sourceEvent={}, date={}, place={}, debug={}",
-        sourceEvent, date, place, debug);
-    LocalDate localDate;
-    try {
-      localDate = LocalDate.parse(date, INPUT_DATE_FORMATTER);
-    } catch (java.time.format.DateTimeParseException e) {
-      return "Invalid date format. Please use '" + INPUT_DATE_FORMAT + "' (e.m. 21/03/2026).";
-    }
+    log.debug("Received request to copy event: sourceEvent={}, newDate={}, place={}, debug={}",
+        sourceEvent, newDate, place, debug);
 
-    return copyEventUseCase.copyEvent(sourceEvent, localDate, place, debug);
+    return copyEventUseCase.copyEvent(sourceEvent, newDate, place, debug);
   }
 
   @ShellMethod(key = "set-participants", value = "Set capacity and quantity_total for each ticket class.")
@@ -61,25 +55,8 @@ public class EventShellAdapter {
         "Received request to set participants: event={}, deelnemers={}, vrijwilligers={}, kind={}, uitnodiging={}, debug={}",
         eventDate, deelnemers, vrijwilligers, kindVanVrijwilliger, metUitnodiging, debug);
 
-    Map<String, Integer> capacities = Map.of(
-        "deelnemers", deelnemers,
-        "vrijwilligers", vrijwilligers,
-        "kind-van-vrijwilliger", kindVanVrijwilliger,
-        "met-uitnodiging", metUitnodiging
-    );
-
-    String dateToUse = eventDate;
-    if (!LATEST.equalsIgnoreCase(eventDate)) {
-      DateTimeFormatter outputFormatter = DateTimeFormatter.ISO_LOCAL_DATE;
-      try {
-        dateToUse = LocalDate.parse(eventDate, INPUT_DATE_FORMATTER).format(outputFormatter);
-      } catch (java.time.format.DateTimeParseException e) {
-        return "Invalid date format. Please use '" + INPUT_DATE_FORMAT + "' (e.g. 21/03/2026).";
-      }
-    }
-
-    List<TicketClass> updated = updateTicketClassesUseCase.setParticipants(dateToUse, capacities,
-        debug);
+    List<TicketClass> updated = updateTicketClassesUseCase.setParticipants(eventDate, deelnemers,
+        vrijwilligers, kindVanVrijwilliger, metUitnodiging, debug);
 
     if (updated.isEmpty()) {
       return "No ticket classes were updated.";

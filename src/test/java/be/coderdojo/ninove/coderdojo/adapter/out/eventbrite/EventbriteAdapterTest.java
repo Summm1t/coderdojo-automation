@@ -80,10 +80,10 @@ class EventbriteAdapterTest {
             }
             """;
 
-        server.expect(requestTo("https://www.eventbriteapi.com/v3/organizations/test-org-id/events/?order_by=start_desc"))
+        server.expect(requestTo("https://www.eventbriteapi.com/v3/organizations/test-org-id/events/?order_by=start_desc&status=all"))
                 .andRespond(withSuccess(responseJson, MediaType.APPLICATION_JSON));
 
-        Optional<Event> event = adapter.findEventByDate("2023-11-15");
+        Optional<Event> event = adapter.findEventByDate("15/11/2023");
 
         assertThat(event).isPresent();
         assertThat(event.get().getId()).isEqualTo("3");

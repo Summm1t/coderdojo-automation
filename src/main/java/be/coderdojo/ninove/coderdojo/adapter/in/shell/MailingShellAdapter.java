@@ -32,7 +32,7 @@ public class MailingShellAdapter {
 
     @ShellMethod(key = "transfer-attendees", value = "Transfer attendees from Eventbrite to MailerLite.")
     public String transferAttendees(
-            @ShellOption(value = "event", defaultValue = LATEST, help = "Date of the event (" + INPUT_DATE_FORMAT + ") or 'latest'") String event,
+            @ShellOption(value = "event", defaultValue = LATEST, help = "Date of the original event (" + INPUT_DATE_FORMAT + ") or 'latest'") String event,
             @ShellOption(value = "debug", defaultValue = "false", help = "Show details without modifying MailerLite") boolean debug
     ) {
         log.debug("Received request to transfer attendees: event={}, debug={}", event, debug);

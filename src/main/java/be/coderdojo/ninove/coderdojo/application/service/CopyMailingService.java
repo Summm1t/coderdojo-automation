@@ -92,7 +92,10 @@ public class CopyMailingService implements CopyMailingUseCase {
                     "Title: " + newTitle + "\n" +
                     "Content: " + newContent.replaceAll("\n", "");
         }
-        return "New mailing campaign created: " + created.getTitle() + " (ID: " + created.getId() + ")";
+        return "New mailing campaign created: " + created.getTitle() + " (ID: " + created.getId() + ").\r\n"
+            + "Open the campaign and edit the template at https://dashboard.mailerlite.com/campaigns/status/draft \r\n"
+            + "Then, \"Continue editing\", choose the template, replace \"{date}\" with the date of the event, and replate the link with the link of the eventbrite event: \r\n"
+            + eventbriteLink;
     }
 
     private String updateTitle(String originalTitle, String newMonthYear) {

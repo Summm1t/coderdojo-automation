@@ -1,5 +1,6 @@
 package be.coderdojo.ninove.coderdojo.adapter.out.eventbrite;
 
+import static be.coderdojo.ninove.coderdojo.domain.model.Constants.INPUT_DATE_FORMAT;
 import static be.coderdojo.ninove.coderdojo.domain.model.RegexConstants.ACHTERNAAM;
 import static be.coderdojo.ninove.coderdojo.domain.model.RegexConstants.OPTIN_ANSWER_TRUE;
 import static be.coderdojo.ninove.coderdojo.domain.model.RegexConstants.OPTIN_QUESTION;
@@ -10,6 +11,7 @@ import be.coderdojo.ninove.coderdojo.domain.model.Attendee;
 import be.coderdojo.ninove.coderdojo.domain.model.Event;
 import be.coderdojo.ninove.coderdojo.domain.model.TicketClass;
 import be.coderdojo.ninove.coderdojo.domain.model.TicketType;
+import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -35,6 +37,8 @@ public class EventbriteAdapter implements EventbritePort {
 
   public static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern(
       "yyyy-MM-dd'T'HH:mm:ss'Z'");
+  private static final DateTimeFormatter INPUT_FORMATTER = DateTimeFormatter.ofPattern(
+      INPUT_DATE_FORMAT);
   private final RestClient eventbriteRestClient;
 
   @Value("${eventbrite.api.organization-id}")
@@ -80,7 +84,7 @@ public class EventbriteAdapter implements EventbritePort {
     // The Eventbrite API doesn't support direct searching for events by date.
     // As a workaround, we retrieve all events for the organization and then filter them by their start date.
     Map<String, Object> response = eventbriteRestClient.get()
-        .uri("/organizations/{orgId}/events/?order_by=start_desc", organizationId)
+        .uri("/organizations/{orgId}/events/?order_by=start_desc&status=all", organizationId)
         .retrieve()
         .onStatus(status -> status == HttpStatus.NOT_FOUND, (req, res) -> {
           log.warn("Organization {} not found in Eventbrite", organizationId);
@@ -100,9 +104,10 @@ public class EventbriteAdapter implements EventbritePort {
     }
 
     List<Map<String, Object>> events = (List<Map<String, Object>>) response.get("events");
+    LocalDate localDate = LocalDate.from(INPUT_FORMATTER.parse(date));
     return events.stream()
         .map(this::mapToEvent)
-        .filter(e -> e.getStartTime().toLocalDate().toString().equals(date))
+        .filter(e -> e.getStartTime().toLocalDate().equals(localDate))
         .findFirst();
   }
 

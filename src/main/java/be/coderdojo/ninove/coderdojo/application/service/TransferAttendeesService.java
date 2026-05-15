@@ -33,14 +33,7 @@ public class TransferAttendeesService implements TransferAttendeesUseCase {
         if (LATEST.equalsIgnoreCase(eventDate)) {
             eventOpt = eventbritePort.findLatestPastEvent();
         } else {
-            String formattedDate = eventDate;
-            try {
-                LocalDate date = LocalDate.parse(eventDate, DateTimeFormatter.ofPattern(INPUT_DATE_FORMAT));
-                formattedDate = date.format(DateTimeFormatter.ISO_LOCAL_DATE);
-            } catch (Exception e) {
-                // assume it's already in yyyy-MM-dd or let the port handle it
-            }
-            eventOpt = eventbritePort.findEventByDate(formattedDate);
+            eventOpt = eventbritePort.findEventByDate(eventDate);
         }
 
         if (eventOpt.isEmpty()) {
